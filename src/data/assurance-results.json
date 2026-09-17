@@ -1,0 +1,840 @@
+[
+  {
+    "assessmentId": "ASM-001",
+    "generatedAt": "2026-09-15T10:02:00Z",
+    "overallRisk": "high",
+    "overallConfidence": 94,
+    "recommendation": "review",
+    "domains": [
+      {
+        "domain": "data_integrity",
+        "score": 78,
+        "confidence": 94,
+        "status": "warning",
+        "summary": "The dataset is structurally valid but contains a significant near-duplicate cluster and label inconsistencies requiring analyst review.",
+        "metrics": [
+          {
+            "id": "DI-001",
+            "name": "Duplicate Sample Rate",
+            "value": 8.7,
+            "unit": "%",
+            "status": "warning",
+            "description": "Percentage of samples participating in near-duplicate clusters."
+          },
+          {
+            "id": "DI-002",
+            "name": "Label Consistency",
+            "value": 91,
+            "unit": "%",
+            "status": "warning",
+            "description": "Agreement rate between detected labels and reference consistency checks."
+          },
+          {
+            "id": "DI-003",
+            "name": "OOD Sample Rate",
+            "value": 2.1,
+            "unit": "%",
+            "status": "pass",
+            "description": "Estimated proportion of samples outside the declared reference distribution."
+          },
+          {
+            "id": "DI-004",
+            "name": "Integrity Coverage",
+            "value": 97,
+            "unit": "%",
+            "status": "pass",
+            "description": "Percentage of submitted samples covered by automated integrity checks."
+          }
+        ],
+        "findings": [
+          {
+            "id": "F-001",
+            "title": "Near-Duplicate Cluster",
+            "description": "A cluster of visually similar samples exceeds the configured duplication threshold and may indicate duplicate flooding or repeated acquisition frames.",
+            "severity": "medium",
+            "confidence": 94,
+            "affectedSamples": 1248,
+            "detectionMethod": "Perceptual hash + embedding similarity"
+          },
+          {
+            "id": "F-002",
+            "title": "Label Inconsistency",
+            "description": "Multiple samples show disagreement between annotation labels and neighboring samples with highly similar visual content.",
+            "severity": "high",
+            "confidence": 91,
+            "affectedSamples": 317,
+            "detectionMethod": "Semantic label consistency analysis"
+          }
+        ]
+      },
+      {
+        "domain": "model_integrity",
+        "score": 64,
+        "confidence": 93,
+        "status": "fail",
+        "summary": "Behavioral analysis identifies a trigger-dependent response pattern that differs materially from the reference model behavior.",
+        "metrics": [
+          {
+            "id": "MI-001",
+            "name": "Behavioral Fingerprint Match",
+            "value": 72,
+            "unit": "%",
+            "status": "warning",
+            "description": "Similarity between submitted model behavior and the declared reference fingerprint."
+          },
+          {
+            "id": "MI-002",
+            "name": "Trigger Response Deviation",
+            "value": 18.4,
+            "unit": "%",
+            "status": "fail",
+            "description": "Observed deviation in model output under trigger-oriented test conditions."
+          },
+          {
+            "id": "MI-003",
+            "name": "Parameter Anomaly",
+            "value": 11,
+            "unit": "%",
+            "status": "warning",
+            "description": "Parameter groups exhibiting statistically unusual characteristics."
+          },
+          {
+            "id": "MI-004",
+            "name": "Reference Battery Coverage",
+            "value": 89,
+            "unit": "%",
+            "status": "pass",
+            "description": "Coverage of the available reference behavioral test battery."
+          }
+        ],
+        "findings": [
+          {
+            "id": "F-003",
+            "title": "Trigger-Dependent Response",
+            "description": "The model produces a statistically unusual response under a subset of trigger-oriented test inputs.",
+            "severity": "high",
+            "confidence": 93,
+            "affectedSamples": 86,
+            "detectionMethod": "Behavioral fingerprint + trigger testing"
+          }
+        ]
+      },
+      {
+        "domain": "inference_verification",
+        "score": 91,
+        "confidence": 98,
+        "status": "pass",
+        "summary": "Most inference records maintain valid provenance bindings, with a small number of integrity exceptions.",
+        "metrics": [
+          {
+            "id": "IV-001",
+            "name": "Signature Validity",
+            "value": 99,
+            "unit": "%",
+            "status": "pass",
+            "description": "Percentage of records with valid provenance signatures."
+          },
+          {
+            "id": "IV-002",
+            "name": "Replay Detection",
+            "value": 0.4,
+            "unit": "%",
+            "status": "pass",
+            "description": "Percentage of inference records identified as potential replay events."
+          },
+          {
+            "id": "IV-003",
+            "name": "Output Integrity",
+            "value": 98,
+            "unit": "%",
+            "status": "pass",
+            "description": "Percentage of outputs consistent with the bound input and model identity."
+          },
+          {
+            "id": "IV-004",
+            "name": "Model Identity Match",
+            "value": 100,
+            "unit": "%",
+            "status": "pass",
+            "description": "Percentage of records bound to the expected model identity."
+          }
+        ],
+        "findings": [
+          {
+            "id": "F-004",
+            "title": "Output Tampering Detected",
+            "description": "A small group of inference outputs does not match the cryptographically bound output representation.",
+            "severity": "critical",
+            "confidence": 98,
+            "affectedSamples": 19,
+            "detectionMethod": "Hash and signature verification"
+          }
+        ]
+      },
+      {
+        "domain": "distribution_analysis",
+        "score": 72,
+        "confidence": 88,
+        "status": "warning",
+        "summary": "The submitted dataset shows measurable illumination and sensor distribution shifts compared with the declared reference.",
+        "metrics": [
+          {
+            "id": "DA-001",
+            "name": "Reference Similarity",
+            "value": 72,
+            "unit": "%",
+            "status": "warning",
+            "description": "Similarity between submitted sample distribution and the reference distribution."
+          },
+          {
+            "id": "DA-002",
+            "name": "Illumination Shift",
+            "value": 14,
+            "unit": "%",
+            "status": "warning",
+            "description": "Measured deviation in illumination characteristics."
+          },
+          {
+            "id": "DA-003",
+            "name": "Sensor Shift",
+            "value": 6,
+            "unit": "%",
+            "status": "pass",
+            "description": "Estimated sensor-related distribution deviation."
+          },
+          {
+            "id": "DA-004",
+            "name": "Seasonal Shift",
+            "value": 3,
+            "unit": "%",
+            "status": "pass",
+            "description": "Estimated seasonal distribution deviation."
+          }
+        ],
+        "findings": [
+          {
+            "id": "F-005",
+            "title": "Illumination Distribution Shift",
+            "description": "Night and low-light samples occur at a higher proportion than in the declared reference distribution.",
+            "severity": "medium",
+            "confidence": 88,
+            "affectedSamples": 2180,
+            "detectionMethod": "Distribution distance analysis"
+          }
+        ]
+      }
+    ]
+  },
+
+  {
+    "assessmentId": "ASM-002",
+    "generatedAt": "2026-09-16T11:04:00Z",
+    "overallRisk": "medium",
+    "overallConfidence": 88,
+    "recommendation": "review",
+    "domains": [
+      {
+        "domain": "data_integrity",
+        "score": 89,
+        "confidence": 92,
+        "status": "pass",
+        "summary": "Dataset structure and annotation consistency are within expected thresholds.",
+        "metrics": [
+          {
+            "id": "DI-101",
+            "name": "Duplicate Sample Rate",
+            "value": 2.4,
+            "unit": "%",
+            "status": "pass",
+            "description": "Percentage of samples participating in near-duplicate clusters."
+          },
+          {
+            "id": "DI-102",
+            "name": "Label Consistency",
+            "value": 97,
+            "unit": "%",
+            "status": "pass",
+            "description": "Agreement rate across label consistency checks."
+          },
+          {
+            "id": "DI-103",
+            "name": "OOD Sample Rate",
+            "value": 3.2,
+            "unit": "%",
+            "status": "warning",
+            "description": "Estimated samples outside the declared reference distribution."
+          },
+          {
+            "id": "DI-104",
+            "name": "Integrity Coverage",
+            "value": 98,
+            "unit": "%",
+            "status": "pass",
+            "description": "Percentage of samples covered by automated checks."
+          }
+        ],
+        "findings": []
+      },
+      {
+        "domain": "model_integrity",
+        "score": 81,
+        "confidence": 89,
+        "status": "warning",
+        "summary": "Model behavior is generally consistent with the reference, with moderate parameter and activation deviations.",
+        "metrics": [
+          {
+            "id": "MI-101",
+            "name": "Behavioral Fingerprint Match",
+            "value": 84,
+            "unit": "%",
+            "status": "pass",
+            "description": "Similarity to the declared reference behavioral fingerprint."
+          },
+          {
+            "id": "MI-102",
+            "name": "Activation Deviation",
+            "value": 7.8,
+            "unit": "%",
+            "status": "warning",
+            "description": "Observed activation distribution deviation."
+          },
+          {
+            "id": "MI-103",
+            "name": "Parameter Anomaly",
+            "value": 5.1,
+            "unit": "%",
+            "status": "pass",
+            "description": "Parameter groups showing unusual statistics."
+          },
+          {
+            "id": "MI-104",
+            "name": "Reference Battery Coverage",
+            "value": 93,
+            "unit": "%",
+            "status": "pass",
+            "description": "Reference test battery coverage."
+          }
+        ],
+        "findings": [
+          {
+            "id": "F-103",
+            "title": "Activation Distribution Deviation",
+            "description": "A subset of intermediate activations differs from the reference model distribution.",
+            "severity": "medium",
+            "confidence": 87,
+            "affectedSamples": 142,
+            "detectionMethod": "Activation statistics comparison"
+          }
+        ]
+      },
+      {
+        "domain": "inference_verification",
+        "score": 96,
+        "confidence": 98,
+        "status": "pass",
+        "summary": "Inference provenance is consistently bound to the submitted model and preprocessing configuration.",
+        "metrics": [
+          {
+            "id": "IV-101",
+            "name": "Signature Validity",
+            "value": 100,
+            "unit": "%",
+            "status": "pass",
+            "description": "Valid inference provenance signatures."
+          },
+          {
+            "id": "IV-102",
+            "name": "Replay Detection",
+            "value": 0.1,
+            "unit": "%",
+            "status": "pass",
+            "description": "Potential replay events."
+          },
+          {
+            "id": "IV-103",
+            "name": "Output Integrity",
+            "value": 99,
+            "unit": "%",
+            "status": "pass",
+            "description": "Output integrity verification rate."
+          },
+          {
+            "id": "IV-104",
+            "name": "Model Identity Match",
+            "value": 100,
+            "unit": "%",
+            "status": "pass",
+            "description": "Expected model identity match."
+          }
+        ],
+        "findings": []
+      },
+      {
+        "domain": "distribution_analysis",
+        "score": 76,
+        "confidence": 84,
+        "status": "warning",
+        "summary": "The dataset shows moderate acquisition-condition differences from the reference distribution.",
+        "metrics": [
+          {
+            "id": "DA-101",
+            "name": "Reference Similarity",
+            "value": 76,
+            "unit": "%",
+            "status": "warning",
+            "description": "Reference distribution similarity."
+          },
+          {
+            "id": "DA-102",
+            "name": "Illumination Shift",
+            "value": 9,
+            "unit": "%",
+            "status": "warning",
+            "description": "Illumination deviation."
+          },
+          {
+            "id": "DA-103",
+            "name": "Sensor Shift",
+            "value": 4,
+            "unit": "%",
+            "status": "pass",
+            "description": "Sensor distribution deviation."
+          },
+          {
+            "id": "DA-104",
+            "name": "Seasonal Shift",
+            "value": 2,
+            "unit": "%",
+            "status": "pass",
+            "description": "Seasonal distribution deviation."
+          }
+        ],
+        "findings": [
+          {
+            "id": "F-105",
+            "title": "Moderate Acquisition Shift",
+            "description": "Camera acquisition conditions differ moderately from the reference set.",
+            "severity": "low",
+            "confidence": 84,
+            "affectedSamples": 980,
+            "detectionMethod": "Reference distribution comparison"
+          }
+        ]
+      }
+    ]
+  },
+
+  {
+    "assessmentId": "ASM-003",
+    "generatedAt": "2026-09-16T13:10:00Z",
+    "overallRisk": "low",
+    "overallConfidence": 96,
+    "recommendation": "accept",
+    "domains": [
+      {
+        "domain": "data_integrity",
+        "score": 96,
+        "confidence": 97,
+        "status": "pass",
+        "summary": "Dataset integrity checks completed without material anomalies.",
+        "metrics": [
+          {
+            "id": "DI-201",
+            "name": "Duplicate Sample Rate",
+            "value": 1.1,
+            "unit": "%",
+            "status": "pass",
+            "description": "Near-duplicate sample rate."
+          },
+          {
+            "id": "DI-202",
+            "name": "Label Consistency",
+            "value": 99,
+            "unit": "%",
+            "status": "pass",
+            "description": "Annotation consistency."
+          },
+          {
+            "id": "DI-203",
+            "name": "OOD Sample Rate",
+            "value": 0.8,
+            "unit": "%",
+            "status": "pass",
+            "description": "Out-of-distribution sample rate."
+          },
+          {
+            "id": "DI-204",
+            "name": "Integrity Coverage",
+            "value": 99,
+            "unit": "%",
+            "status": "pass",
+            "description": "Integrity analysis coverage."
+          }
+        ],
+        "findings": []
+      },
+      {
+        "domain": "model_integrity",
+        "score": 94,
+        "confidence": 95,
+        "status": "pass",
+        "summary": "Model behavior closely matches the declared reference characteristics.",
+        "metrics": [
+          {
+            "id": "MI-201",
+            "name": "Behavioral Fingerprint Match",
+            "value": 96,
+            "unit": "%",
+            "status": "pass",
+            "description": "Reference behavioral fingerprint similarity."
+          },
+          {
+            "id": "MI-202",
+            "name": "Activation Deviation",
+            "value": 2.1,
+            "unit": "%",
+            "status": "pass",
+            "description": "Activation distribution deviation."
+          },
+          {
+            "id": "MI-203",
+            "name": "Parameter Anomaly",
+            "value": 1.8,
+            "unit": "%",
+            "status": "pass",
+            "description": "Parameter anomaly rate."
+          },
+          {
+            "id": "MI-204",
+            "name": "Reference Battery Coverage",
+            "value": 98,
+            "unit": "%",
+            "status": "pass",
+            "description": "Reference battery coverage."
+          }
+        ],
+        "findings": []
+      },
+      {
+        "domain": "inference_verification",
+        "score": 99,
+        "confidence": 99,
+        "status": "pass",
+        "summary": "Inference records maintain consistent cryptographic and provenance bindings.",
+        "metrics": [
+          {
+            "id": "IV-201",
+            "name": "Signature Validity",
+            "value": 100,
+            "unit": "%",
+            "status": "pass",
+            "description": "Valid signatures."
+          },
+          {
+            "id": "IV-202",
+            "name": "Replay Detection",
+            "value": 0,
+            "unit": "%",
+            "status": "pass",
+            "description": "Replay events."
+          },
+          {
+            "id": "IV-203",
+            "name": "Output Integrity",
+            "value": 100,
+            "unit": "%",
+            "status": "pass",
+            "description": "Output integrity."
+          },
+          {
+            "id": "IV-204",
+            "name": "Model Identity Match",
+            "value": 100,
+            "unit": "%",
+            "status": "pass",
+            "description": "Model identity match."
+          }
+        ],
+        "findings": []
+      },
+      {
+        "domain": "distribution_analysis",
+        "score": 93,
+        "confidence": 94,
+        "status": "pass",
+        "summary": "Submitted distribution remains closely aligned with the declared reference.",
+        "metrics": [
+          {
+            "id": "DA-201",
+            "name": "Reference Similarity",
+            "value": 93,
+            "unit": "%",
+            "status": "pass",
+            "description": "Reference similarity."
+          },
+          {
+            "id": "DA-202",
+            "name": "Illumination Shift",
+            "value": 3,
+            "unit": "%",
+            "status": "pass",
+            "description": "Illumination shift."
+          },
+          {
+            "id": "DA-203",
+            "name": "Sensor Shift",
+            "value": 2,
+            "unit": "%",
+            "status": "pass",
+            "description": "Sensor shift."
+          },
+          {
+            "id": "DA-204",
+            "name": "Seasonal Shift",
+            "value": 1,
+            "unit": "%",
+            "status": "pass",
+            "description": "Seasonal shift."
+          }
+        ],
+        "findings": []
+      }
+    ]
+  },
+
+  {
+    "assessmentId": "ASM-004",
+    "generatedAt": "2026-09-17T08:44:00Z",
+    "overallRisk": "high",
+    "overallConfidence": 91,
+    "recommendation": "quarantine",
+    "domains": [
+      {
+        "domain": "data_integrity",
+        "score": 61,
+        "confidence": 92,
+        "status": "fail",
+        "summary": "Dataset analysis identifies suspicious label patterns and a concentrated duplicate cluster.",
+        "metrics": [
+          {
+            "id": "DI-301",
+            "name": "Duplicate Sample Rate",
+            "value": 12.8,
+            "unit": "%",
+            "status": "fail",
+            "description": "Near-duplicate sample rate."
+          },
+          {
+            "id": "DI-302",
+            "name": "Label Consistency",
+            "value": 84,
+            "unit": "%",
+            "status": "warning",
+            "description": "Label consistency."
+          },
+          {
+            "id": "DI-303",
+            "name": "OOD Sample Rate",
+            "value": 4.8,
+            "unit": "%",
+            "status": "warning",
+            "description": "Out-of-distribution sample rate."
+          },
+          {
+            "id": "DI-304",
+            "name": "Integrity Coverage",
+            "value": 95,
+            "unit": "%",
+            "status": "pass",
+            "description": "Integrity analysis coverage."
+          }
+        ],
+        "findings": [
+          {
+            "id": "F-301",
+            "title": "Duplicate Flooding Indicator",
+            "description": "A concentrated cluster of visually near-identical pedestrian frames is substantially larger than the reference pattern.",
+            "severity": "high",
+            "confidence": 92,
+            "affectedSamples": 2840,
+            "detectionMethod": "Embedding cluster density analysis"
+          },
+          {
+            "id": "F-302",
+            "title": "Systematic Label Deviation",
+            "description": "A subset of pedestrian annotations exhibits systematic disagreement with reference label distributions.",
+            "severity": "high",
+            "confidence": 89,
+            "affectedSamples": 611,
+            "detectionMethod": "Label distribution and consistency analysis"
+          }
+        ]
+      },
+      {
+        "domain": "model_integrity",
+        "score": 69,
+        "confidence": 90,
+        "status": "warning",
+        "summary": "The model exhibits moderate behavioral differences from the reference detector.",
+        "metrics": [
+          {
+            "id": "MI-301",
+            "name": "Behavioral Fingerprint Match",
+            "value": 74,
+            "unit": "%",
+            "status": "warning",
+            "description": "Behavioral fingerprint similarity."
+          },
+          {
+            "id": "MI-302",
+            "name": "Trigger Response Deviation",
+            "value": 12.1,
+            "unit": "%",
+            "status": "warning",
+            "description": "Trigger response deviation."
+          },
+          {
+            "id": "MI-303",
+            "name": "Parameter Anomaly",
+            "value": 8.7,
+            "unit": "%",
+            "status": "warning",
+            "description": "Parameter anomaly."
+          },
+          {
+            "id": "MI-304",
+            "name": "Reference Battery Coverage",
+            "value": 91,
+            "unit": "%",
+            "status": "pass",
+            "description": "Reference test coverage."
+          }
+        ],
+        "findings": [
+          {
+            "id": "F-303",
+            "title": "Behavioral Fingerprint Deviation",
+            "description": "Model outputs differ from the reference behavior under several edge-case scenarios.",
+            "severity": "medium",
+            "confidence": 90,
+            "affectedSamples": 173,
+            "detectionMethod": "Reference behavioral comparison"
+          }
+        ]
+      },
+      {
+        "domain": "inference_verification",
+        "score": 87,
+        "confidence": 96,
+        "status": "warning",
+        "summary": "Most inference records are valid, but several provenance inconsistencies were detected.",
+        "metrics": [
+          {
+            "id": "IV-301",
+            "name": "Signature Validity",
+            "value": 97,
+            "unit": "%",
+            "status": "pass",
+            "description": "Valid signatures."
+          },
+          {
+            "id": "IV-302",
+            "name": "Replay Detection",
+            "value": 1.2,
+            "unit": "%",
+            "status": "warning",
+            "description": "Potential replay events."
+          },
+          {
+            "id": "IV-303",
+            "name": "Output Integrity",
+            "value": 95,
+            "unit": "%",
+            "status": "warning",
+            "description": "Output integrity."
+          },
+          {
+            "id": "IV-304",
+            "name": "Model Identity Match",
+            "value": 99,
+            "unit": "%",
+            "status": "pass",
+            "description": "Model identity match."
+          }
+        ],
+        "findings": [
+          {
+            "id": "F-304",
+            "title": "Potential Replay Events",
+            "description": "A small number of records contain sequence and timestamp characteristics consistent with replay.",
+            "severity": "medium",
+            "confidence": 87,
+            "affectedSamples": 31,
+            "detectionMethod": "Sequence, nonce and timestamp analysis"
+          }
+        ]
+      },
+      {
+        "domain": "distribution_analysis",
+        "score": 68,
+        "confidence": 86,
+        "status": "warning",
+        "summary": "The dataset contains notable sensor and illumination differences from the declared reference.",
+        "metrics": [
+          {
+            "id": "DA-301",
+            "name": "Reference Similarity",
+            "value": 68,
+            "unit": "%",
+            "status": "warning",
+            "description": "Reference similarity."
+          },
+          {
+            "id": "DA-302",
+            "name": "Illumination Shift",
+            "value": 17,
+            "unit": "%",
+            "status": "warning",
+            "description": "Illumination shift."
+          },
+          {
+            "id": "DA-303",
+            "name": "Sensor Shift",
+            "value": 11,
+            "unit": "%",
+            "status": "warning",
+            "description": "Sensor shift."
+          },
+          {
+            "id": "DA-304",
+            "name": "Seasonal Shift",
+            "value": 5,
+            "unit": "%",
+            "status": "pass",
+            "description": "Seasonal shift."
+          }
+        ],
+        "findings": [
+          {
+            "id": "F-305",
+            "title": "Sensor Distribution Shift",
+            "description": "Camera characteristics differ from the declared reference acquisition profile.",
+            "severity": "medium",
+            "confidence": 86,
+            "affectedSamples": 1540,
+            "detectionMethod": "Sensor and acquisition distribution analysis"
+          }
+        ]
+      }
+    ]
+  },
+
+  {
+    "assessmentId": "ASM-005",
+    "generatedAt": "2026-09-17T11:40:00Z",
+    "overallRisk": "medium",
+    "overallConfidence": 0,
+    "recommendation": "review",
+    "domains": []
+  }
+]
