@@ -1,0 +1,110 @@
+[
+  {
+    "id": "EVD-001",
+    "findingId": "F-001",
+    "type": "Similarity Evidence",
+    "description": "Evidence supporting the near-duplicate cluster identified during dataset integrity analysis.",
+    "value": "Visually similar samples exceed the configured duplication threshold.",
+    "source": "Perceptual hash + embedding similarity",
+    "confidence": 94
+  },
+  {
+    "id": "EVD-002",
+    "findingId": "F-002",
+    "type": "Label Evidence",
+    "description": "Evidence supporting the detected disagreement between annotation labels and neighboring visually similar samples.",
+    "value": "Label consistency disagreement detected across affected samples.",
+    "source": "Semantic label consistency analysis",
+    "confidence": 91
+  },
+  {
+    "id": "EVD-003",
+    "findingId": "F-003",
+    "type": "Behavioral Evidence",
+    "description": "Evidence from behavioral testing showing an unusual model response under trigger-oriented test inputs.",
+    "value": "Statistically unusual response observed under a subset of trigger-oriented inputs.",
+    "source": "Behavioral fingerprint + trigger testing",
+    "confidence": 93
+  },
+  {
+    "id": "EVD-004",
+    "findingId": "F-004",
+    "type": "Cryptographic Evidence",
+    "description": "Evidence showing that a group of inference outputs does not match the cryptographically bound representation.",
+    "value": "Output representation mismatch detected during hash and signature verification.",
+    "source": "Hash and signature verification",
+    "confidence": 98
+  },
+  {
+    "id": "EVD-005",
+    "findingId": "F-005",
+    "type": "Distribution Evidence",
+    "description": "Evidence showing an increased proportion of night and low-light samples relative to the declared reference distribution.",
+    "value": "Night and low-light sample proportion exceeds the reference pattern.",
+    "source": "Distribution distance analysis",
+    "confidence": 88
+  },
+  {
+    "id": "EVD-006",
+    "findingId": "F-103",
+    "type": "Activation Evidence",
+    "description": "Evidence showing that a subset of intermediate model activations differs from the reference model distribution.",
+    "value": "Intermediate activation distribution deviation detected.",
+    "source": "Activation statistics comparison",
+    "confidence": 87
+  },
+  {
+    "id": "EVD-007",
+    "findingId": "F-105",
+    "type": "Acquisition Evidence",
+    "description": "Evidence showing moderate differences in camera acquisition conditions compared with the reference set.",
+    "value": "Moderate acquisition-condition deviation detected.",
+    "source": "Reference distribution comparison",
+    "confidence": 84
+  },
+  {
+    "id": "EVD-008",
+    "findingId": "F-301",
+    "type": "Cluster Evidence",
+    "description": "Evidence supporting the concentrated cluster of visually near-identical pedestrian frames.",
+    "value": "Cluster density substantially exceeds the reference pattern.",
+    "source": "Embedding cluster density analysis",
+    "confidence": 92
+  },
+  {
+    "id": "EVD-009",
+    "findingId": "F-302",
+    "type": "Label Distribution Evidence",
+    "description": "Evidence supporting systematic disagreement between pedestrian annotations and reference label distributions.",
+    "value": "Systematic label distribution deviation detected.",
+    "source": "Label distribution and consistency analysis",
+    "confidence": 89
+  },
+  {
+    "id": "EVD-010",
+    "findingId": "F-303",
+    "type": "Behavioral Comparison Evidence",
+    "description": "Evidence showing differences between observed model outputs and reference behavior under edge-case scenarios.",
+    "value": "Reference behavioral deviation detected across edge-case scenarios.",
+    "source": "Reference behavioral comparison",
+    "confidence": 90
+  },
+  {
+    "id": "EVD-011",
+    "findingId": "F-304",
+    "type": "Replay Evidence",
+    "description": "Evidence showing sequence and timestamp characteristics consistent with potential replay events.",
+    "value": "Sequence, nonce, and timestamp characteristics indicate potential replay.",
+    "source": "Sequence, nonce and timestamp analysis",
+    "confidence": 87
+  },
+  {
+    "id": "EVD-012",
+    "findingId": "F-305",
+    "type": "Sensor Evidence",
+    "description": "Evidence showing differences between observed camera characteristics and the declared reference acquisition profile.",
+    "value": "Sensor and acquisition characteristics differ from the reference profile.",
+    "source": "Sensor and acquisition distribution analysis",
+    "confidence": 86
+  }
+]

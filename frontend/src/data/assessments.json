@@ -1,0 +1,95 @@
+[
+  {
+    "id": "ASM-001",
+    "name": "Vehicle Detection Assurance",
+    "contributorId": "USR-002",
+    "contributorName": "Team Alpha",
+    "useCase": "Autonomous road vehicle perception",
+    "task": "Object Detection",
+    "status": "review",
+    "overallRisk": "high",
+    "confidence": 94,
+    "createdAt": "2026-09-15T09:30:00Z",
+    "processing": {
+      "status": "completed",
+      "progress": 100,
+      "currentStep": "Automated analysis complete — awaiting analyst review",
+      "startedAt": "2026-09-15T09:31:00Z",
+      "completedAt": "2026-09-15T10:02:00Z"
+    }
+  },
+  {
+    "id": "ASM-002",
+    "name": "Road Scene Classification",
+    "contributorId": "USR-004",
+    "contributorName": "VisionWorks",
+    "useCase": "Road scene understanding",
+    "task": "Image Classification",
+    "status": "analysis",
+    "overallRisk": "medium",
+    "confidence": 88,
+    "createdAt": "2026-09-16T10:15:00Z",
+    "processing": {
+      "status": "processing",
+      "progress": 68,
+      "currentStep": "Verifying inference provenance",
+      "startedAt": "2026-09-16T10:17:00Z"
+    }
+  },
+  {
+    "id": "ASM-003",
+    "name": "Traffic Sign Detection",
+    "contributorId": "USR-005",
+    "contributorName": "EdgeVision",
+    "useCase": "Traffic sign recognition",
+    "task": "Object Detection",
+    "status": "completed",
+    "overallRisk": "low",
+    "confidence": 96,
+    "createdAt": "2026-09-16T12:40:00Z",
+    "processing": {
+      "status": "completed",
+      "progress": 100,
+      "currentStep": "Assessment completed",
+      "startedAt": "2026-09-16T12:42:00Z",
+      "completedAt": "2026-09-16T13:10:00Z"
+    }
+  },
+  {
+    "id": "ASM-004",
+    "name": "Pedestrian Detection",
+    "contributorId": "USR-006",
+    "contributorName": "Team Beta",
+    "useCase": "Pedestrian safety perception",
+    "task": "Object Detection",
+    "status": "review",
+    "overallRisk": "high",
+    "confidence": 91,
+    "createdAt": "2026-09-17T08:10:00Z",
+    "processing": {
+      "status": "completed",
+      "progress": 100,
+      "currentStep": "Automated analysis complete — awaiting analyst review",
+      "startedAt": "2026-09-17T08:12:00Z",
+      "completedAt": "2026-09-17T08:44:00Z"
+    }
+  },
+  {
+    "id": "ASM-005",
+    "name": "Lane Detection Model",
+    "contributorId": "USR-007",
+    "contributorName": "AutoML Lab",
+    "useCase": "Highway lane perception",
+    "task": "Semantic Segmentation",
+    "status": "registered",
+    "overallRisk": "medium",
+    "confidence": 0,
+    "createdAt": "2026-09-17T11:20:00Z",
+    "processing": {
+      "status": "queued",
+      "progress": 20,
+      "currentStep": "Waiting for assurance processing",
+      "startedAt": "2026-09-17T11:22:00Z"
+    }
+  }
+]

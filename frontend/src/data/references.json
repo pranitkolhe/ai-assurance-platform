@@ -1,0 +1,142 @@
+[
+  {
+    "id": "REF-DATA-001",
+    "name": "Urban Vehicle Detection Reference",
+    "type": "dataset",
+    "status": "active",
+    "task": "Object Detection",
+    "format": "COCO",
+    "description": "Reference distribution profile for urban vehicle detection imagery.",
+    "compatibility": {
+      "classSchema": "vehicle, car, truck, bus, motorcycle",
+      "sensor": "RGB Camera",
+      "environment": "Urban",
+      "season": "Mixed",
+      "terrain": "Road / Urban",
+      "illumination": "Daylight"
+    },
+    "source": "Internal Reference Repository",
+    "registeredBy": "System Admin",
+    "registeredAt": "2026-08-12T09:30:00Z",
+    "metadata": {
+      "sampleCount": 18500,
+      "imageWidth": 1920,
+      "imageHeight": 1080,
+      "referenceVersion": "1.2"
+    }
+  },
+  {
+    "id": "REF-DATA-002",
+    "name": "Road Scene Distribution Profile",
+    "type": "dataset",
+    "status": "active",
+    "task": "Image Classification",
+    "format": "COCO",
+    "description": "Reference profile for road-scene acquisition and environmental distribution analysis.",
+    "compatibility": {
+      "classSchema": "highway, urban-road, rural-road, intersection",
+      "sensor": "RGB Camera",
+      "environment": "Road",
+      "season": "Mixed",
+      "terrain": "Road",
+      "illumination": "Daylight"
+    },
+    "source": "Internal Reference Repository",
+    "registeredBy": "System Admin",
+    "registeredAt": "2026-08-18T11:15:00Z",
+    "metadata": {
+      "sampleCount": 12400,
+      "referenceVersion": "1.0"
+    }
+  },
+  {
+    "id": "REF-MODEL-001",
+    "name": "Vehicle Detection ONNX Baseline",
+    "type": "model",
+    "status": "active",
+    "task": "Object Detection",
+    "format": "ONNX",
+    "description": "Known-good vehicle detection model used for behavioral and structural comparison.",
+    "compatibility": {
+      "framework": "ONNX Runtime",
+      "architecture": "YOLO-style detector",
+      "inputDimensions": "640x640",
+      "classSchema": "vehicle, car, truck, bus, motorcycle"
+    },
+    "source": "Internal Model Registry",
+    "registeredBy": "System Admin",
+    "registeredAt": "2026-07-22T08:45:00Z",
+    "metadata": {
+      "parameterCount": 25500000,
+      "referenceVersion": "2.1",
+      "behavioralBattery": "vehicle-detector-v3"
+    }
+  },
+  {
+    "id": "REF-MODEL-002",
+    "name": "Road Classification TorchScript Baseline",
+    "type": "model",
+    "status": "active",
+    "task": "Image Classification",
+    "format": "TorchScript",
+    "description": "Known-good road-scene classification reference model.",
+    "compatibility": {
+      "framework": "PyTorch",
+      "architecture": "ResNet-style classifier",
+      "inputDimensions": "224x224",
+      "classSchema": "highway, urban-road, rural-road, intersection"
+    },
+    "source": "Internal Model Registry",
+    "registeredBy": "System Admin",
+    "registeredAt": "2026-07-30T14:20:00Z",
+    "metadata": {
+      "parameterCount": 11600000,
+      "referenceVersion": "1.4",
+      "behavioralBattery": "road-classifier-v2"
+    }
+  },
+  {
+    "id": "REF-INF-001",
+    "name": "Vehicle Detection Provenance Battery",
+    "type": "inference",
+    "status": "active",
+    "task": "Object Detection",
+    "format": "JSONL",
+    "description": "Reference inference record set for provenance, replay and output-integrity verification.",
+    "compatibility": {
+      "framework": "ONNX Runtime",
+      "architecture": "YOLO-style detector",
+      "classSchema": "vehicle, car, truck, bus, motorcycle"
+    },
+    "source": "Internal Inference Registry",
+    "registeredBy": "System Admin",
+    "registeredAt": "2026-08-05T10:00:00Z",
+    "metadata": {
+      "recordCount": 5000,
+      "referenceVersion": "1.1",
+      "provenanceSchema": "v2"
+    }
+  },
+  {
+    "id": "REF-INF-002",
+    "name": "Road Classification Provenance Battery",
+    "type": "inference",
+    "status": "active",
+    "task": "Image Classification",
+    "format": "JSONL",
+    "description": "Reference inference records for classification provenance and replay analysis.",
+    "compatibility": {
+      "framework": "PyTorch",
+      "architecture": "ResNet-style classifier",
+      "classSchema": "highway, urban-road, rural-road, intersection"
+    },
+    "source": "Internal Inference Registry",
+    "registeredBy": "System Admin",
+    "registeredAt": "2026-08-10T13:40:00Z",
+    "metadata": {
+      "recordCount": 3500,
+      "referenceVersion": "1.0",
+      "provenanceSchema": "v2"
+    }
+  }
+]
