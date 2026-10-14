@@ -1,19 +1,28 @@
-import flaggedImages from "../data/flagged-images.json";
-
 import type { FlaggedImage } from "../models/flaggedImage.model";
 
-const images = flaggedImages as FlaggedImage[];
+const FLAGGED_KEY = "assure_flagged_images";
+
+function readStoredFlaggedImages(): FlaggedImage[] {
+  const stored = localStorage.getItem(FLAGGED_KEY);
+  if (!stored) return [];
+  try {
+    const parsed: unknown = JSON.parse(stored);
+    return Array.isArray(parsed) ? (parsed as FlaggedImage[]) : [];
+  } catch {
+    return [];
+  }
+}
 
 export function getFlaggedImages(): FlaggedImage[] {
-  return images;
+  return readStoredFlaggedImages();
 }
 
 export function getFlaggedImageById(id: string): FlaggedImage | undefined {
-  return images.find((image) => image.id === id);
+  return getFlaggedImages().find((image) => image.id === id);
 }
 
 export function getFlaggedImagesByAssessment(
   assessmentId: string,
 ): FlaggedImage[] {
-  return images.filter((image) => image.assessmentId === assessmentId);
+  return getFlaggedImages().filter((image) => image.assessmentId === assessmentId);
 }

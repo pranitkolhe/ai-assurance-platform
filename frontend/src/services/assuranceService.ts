@@ -1,16 +1,52 @@
-import assuranceResults from "../data/assurance-results.json";
+import { apiRequest } from "../api/client";
 import type { AssuranceResult } from "../models/assurance.model";
 
-const results = assuranceResults as AssuranceResult[];
+const ASSURANCE_RESULTS_KEY = "assure_results";
+
+function readStoredResults(): AssuranceResult[] {
+  const stored = localStorage.getItem(ASSURANCE_RESULTS_KEY);
+  if (!stored) return [];
+  try {
+    const parsed: unknown = JSON.parse(stored);
+    return Array.isArray(parsed) ? (parsed as AssuranceResult[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeStoredResults(records: AssuranceResult[]): void {
+  localStorage.setItem(ASSURANCE_RESULTS_KEY, JSON.stringify(records));
+}
+
+export async function fetchAssuranceResultFromApi(
+  assessmentId: string,
+): Promise<AssuranceResult | undefined> {
+  try {
+    const result = await apiRequest<AssuranceResult>(
+      `/assurance-lab/${assessmentId}/results`,
+    );
+    const stored = readStoredResults();
+    const idx = stored.findIndex((r) => r.assessmentId === assessmentId);
+    if (idx >= 0) {
+      stored[idx] = result;
+    } else {
+      stored.push(result);
+    }
+    writeStoredResults(stored);
+    return result;
+  } catch {
+    return getAssuranceResult(assessmentId);
+  }
+}
 
 export function getAssuranceResults(): AssuranceResult[] {
-  return results;
+  return readStoredResults();
 }
 
 export function getAssuranceResult(
   assessmentId: string,
 ): AssuranceResult | undefined {
-  return results.find((result) => result.assessmentId === assessmentId);
+  return getAssuranceResults().find((result) => result.assessmentId === assessmentId);
 }
 
 export function getAssuranceResultByAssessmentId(

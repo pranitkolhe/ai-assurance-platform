@@ -2,8 +2,7 @@ import { useMemo, useState } from "react";
 import { Database, FileCheck2, Search, ShieldAlert } from "lucide-react";
 
 import { useAuth } from "../../../context/AuthContext";
-import { loadAssessments } from "../../../controllers/assessmentController";
-import { getAllAssets } from "../../../services/assessmentService";
+import { useLiveAssessments, useLiveAssets } from "../../../controllers/assessmentController";
 
 export default function ContributorAssetsPage() {
   const { user } = useAuth();
@@ -12,8 +11,9 @@ export default function ContributorAssetsPage() {
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  const assessments = loadAssessments();
-  const allAssets = getAllAssets();
+  const assessments = useLiveAssessments();
+  const allAssets = useLiveAssets();
+
 
   const myAssessmentIds = useMemo(() => {
     if (!user) return new Set<string>();

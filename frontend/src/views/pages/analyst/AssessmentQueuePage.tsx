@@ -11,7 +11,8 @@ import {
   ShieldAlert,
 } from "lucide-react";
 
-import { loadAssessments } from "../../../controllers/assessmentController";
+import { useLiveAssessments } from "../../../controllers/assessmentController";
+
 
 import { getProcessingState } from "../../../services/processingService";
 
@@ -134,9 +135,10 @@ export default function AssessmentQueuePage() {
     };
   }, []);
 
-  const assessments = loadAssessments();
+  const assessments = useLiveAssessments();
 
   const queue = useMemo(() => {
+
     return assessments
       .filter((assessment) => {
         const processing = getProcessing(assessment);

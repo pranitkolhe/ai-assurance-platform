@@ -25,10 +25,8 @@ import type { UploadAssetType } from "../../../utils/fileValidation";
 
 import {
   createAssessment,
-  registerAsset,
+  uploadAssetFile,
 } from "../../../services/assessmentService";
-
-import { saveUploadedFile } from "../../../services/fileStorageService";
 
 import { useAuth } from "../../../context/AuthContext";
 
@@ -315,38 +313,26 @@ export default function SubmitAssetPage() {
 
     try {
       /*
-       * 1. Create the assessment.
+       * 1. Create the assessment in PostgreSQL backend.
        */
-      const assessment = createAssessment({
+      const assessment = await createAssessment({
         name: assessmentName.trim(),
-
         contributorId: user.id,
-
         contributorName: user.name,
-
         useCase: useCase.trim(),
-
         task,
       });
 
       /*
-       * 2. Register every asset and persist
-       *    the actual uploaded file in IndexedDB.
+       * 2. Stream uploaded assets directly to FastAPI server
+       *    where SHA256 checksums are calculated and records stored in PostgreSQL.
        */
       for (const pendingAsset of pendingAssets) {
-        const registeredAsset = registerAsset(assessment.id, {
-          type: pendingAsset.type,
-          name: pendingAsset.file.name,
-          format: pendingAsset.format,
-          size: formatFileSize(pendingAsset.file.size),
-          sha256: "pending",
-          status: "submitted",
-        });
-
-        await saveUploadedFile(
-          registeredAsset.id,
-          assessment.id,
+        await uploadAssetFile(
           pendingAsset.file,
+          assessment.id,
+          pendingAsset.type,
+          pendingAsset.format,
         );
       }
 

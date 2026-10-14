@@ -16,10 +16,10 @@ export default function LoginPage() {
     return <Navigate to={`/${user.role}/dashboard`} replace />;
   }
 
-  const handleSubmit = (event: FormEvent) => {
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
 
-    const success = login(email, password);
+    const success = await login(email, password);
 
     if (!success) {
       setError("Invalid email or password");

@@ -10,7 +10,7 @@ import {
   X,
 } from "lucide-react";
 
-import { loadAssessments } from "../../../controllers/assessmentController";
+import { useLiveAssessments } from "../../../controllers/assessmentController";
 import { loadRiskDecision } from "../../../controllers/riskDecisionController";
 import { loadAssuranceResult } from "../../../controllers/assuranceController";
 
@@ -24,6 +24,7 @@ type StatusFilter = "all" | Assessment["status"];
 type RiskFilter = "all" | Assessment["overallRisk"];
 
 type DecisionFilter = "all" | RiskDecision["disposition"] | "pending";
+
 
 function decisionLabel(disposition: RiskDecision["disposition"]): string {
   switch (disposition) {
@@ -118,59 +119,43 @@ function formatDate(value: string): string {
 
 export default function AssessmentStatusPage() {
   const { user } = useAuth();
+  const allAssessments = useLiveAssessments();
 
   const [assessments, setAssessments] = useState<Assessment[]>([]);
-
   const [decisions, setDecisions] = useState<Record<string, RiskDecision>>({});
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-
   const [riskFilter, setRiskFilter] = useState<RiskFilter>("all");
-
   const [decisionFilter, setDecisionFilter] = useState<DecisionFilter>("all");
-
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadData = () => {
-      if (!user) {
-        setAssessments([]);
-        setDecisions({});
-        setLoading(false);
-        return;
-      }
-
-      const allAssessments = loadAssessments();
-
-      const contributorAssessments = allAssessments.filter(
-        (assessment) => assessment.contributorId === user.id,
-      );
-
-      setAssessments(contributorAssessments);
-
-      const nextDecisions: Record<string, RiskDecision> = {};
-
-      contributorAssessments.forEach((assessment) => {
-        const decision = loadRiskDecision(assessment.id);
-
-        if (decision) {
-          nextDecisions[assessment.id] = decision;
-        }
-      });
-
-      setDecisions(nextDecisions);
+    if (!user) {
+      setAssessments([]);
+      setDecisions({});
       setLoading(false);
-    };
+      return;
+    }
 
-    loadData();
+    const contributorAssessments = allAssessments.filter(
+      (assessment: Assessment) => assessment.contributorId === user.id,
+    );
 
-    const interval = window.setInterval(loadData, 1000);
+    setAssessments(contributorAssessments);
 
-    return () => {
-      window.clearInterval(interval);
-    };
-  }, [user]);
+    const nextDecisions: Record<string, RiskDecision> = {};
+    contributorAssessments.forEach((assessment: Assessment) => {
+      const decision = loadRiskDecision(assessment.id);
+      if (decision) {
+        nextDecisions[assessment.id] = decision;
+      }
+    });
+
+    setDecisions(nextDecisions);
+    setLoading(false);
+  }, [allAssessments, user]);
+
 
   const filteredAssessments = useMemo(() => {
     const query = search.trim().toLowerCase();

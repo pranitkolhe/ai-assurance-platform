@@ -10,9 +10,8 @@ import {
 } from "lucide-react";
 
 import { loadAssessments } from "../../../controllers/assessmentController";
-import assuranceResults from "../../../data/assurance-results.json";
+import { getAssuranceResults } from "../../../services/assuranceService";
 
-import type { AssuranceResult } from "../../../models/assurance.model";
 import type { Severity } from "../../../models/finding.model";
 
 interface FindingRow {
@@ -81,7 +80,7 @@ function getDomainPath(domain: string, assessmentId: string) {
 
 export default function FindingsPage() {
   const assessments = loadAssessments();
-  const results = assuranceResults as AssuranceResult[];
+  const results = getAssuranceResults();
 
   const [search, setSearch] = useState("");
   const [severityFilter, setSeverityFilter] = useState("all");

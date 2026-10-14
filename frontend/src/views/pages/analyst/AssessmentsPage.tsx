@@ -7,11 +7,12 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 
-import { loadAssessments } from "../../../controllers/assessmentController";
+import { useLiveAssessments } from "../../../controllers/assessmentController";
 import type {
   Assessment,
   AssessmentStatus,
 } from "../../../models/assessment.model";
+
 
 function RiskBadge({ risk }: { risk: Assessment["overallRisk"] }) {
   const styles = {
@@ -49,9 +50,10 @@ function StatusBadge({ status }: { status: Assessment["status"] }) {
 }
 
 export default function AssessmentsPage() {
-  const assessments = loadAssessments();
+  const assessments = useLiveAssessments();
 
   const [search, setSearch] = useState("");
+
   const [riskFilter, setRiskFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
 

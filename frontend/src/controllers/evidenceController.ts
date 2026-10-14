@@ -1,17 +1,26 @@
-import evidence from "../data/evidence.json";
-
 import type { Evidence } from "../models/evidence.model";
 
-const evidenceRecords = evidence as Evidence[];
+const EVIDENCE_KEY = "assure_evidence";
+
+function readStoredEvidence(): Evidence[] {
+  const stored = localStorage.getItem(EVIDENCE_KEY);
+  if (!stored) return [];
+  try {
+    const parsed: unknown = JSON.parse(stored);
+    return Array.isArray(parsed) ? (parsed as Evidence[]) : [];
+  } catch {
+    return [];
+  }
+}
 
 export function loadEvidence(): Evidence[] {
-  return evidenceRecords;
+  return readStoredEvidence();
 }
 
 export function loadEvidenceById(id: string): Evidence | undefined {
-  return evidenceRecords.find((item) => item.id === id);
+  return readStoredEvidence().find((item) => item.id === id);
 }
 
 export function loadEvidenceByFinding(findingId: string): Evidence[] {
-  return evidenceRecords.filter((item) => item.findingId === findingId);
+  return readStoredEvidence().filter((item) => item.findingId === findingId);
 }

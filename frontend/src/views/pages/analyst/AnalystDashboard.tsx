@@ -8,9 +8,9 @@ import {
   ShieldCheck,
   Activity,
 } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { loadAnalystDashboard } from "../../../controllers/dashboardController";
+import { loadAnalystDashboard, fetchAnalystDashboard } from "../../../controllers/dashboardController";
 import type { Severity } from "../../../models/finding.model";
 
 const riskClasses = {
@@ -38,7 +38,11 @@ function getStatusLabel(status: string) {
 }
 
 export default function AnalystDashboard() {
-  const data = useMemo(() => loadAnalystDashboard(), []);
+  const [data, setData] = useState(() => loadAnalystDashboard());
+
+  useEffect(() => {
+    fetchAnalystDashboard().then(setData);
+  }, []);
 
   return (
     <div className="mx-auto max-w-[1600px] space-y-6">
@@ -202,19 +206,19 @@ export default function AnalystDashboard() {
             {[
               {
                 label: "Data Integrity",
-                value: data.assuranceSummary.dataIntegrity,
+                value: data.assuranceSummary?.dataIntegrity ?? 100,
               },
               {
                 label: "Model Integrity",
-                value: data.assuranceSummary.modelIntegrity,
+                value: data.assuranceSummary?.modelIntegrity ?? 100,
               },
               {
                 label: "Inference Verification",
-                value: data.assuranceSummary.inferenceVerification,
+                value: data.assuranceSummary?.inferenceVerification ?? 100,
               },
               {
                 label: "Distribution Analysis",
-                value: data.assuranceSummary.distributionAnalysis,
+                value: data.assuranceSummary?.distributionAnalysis ?? 100,
               },
             ].map((item) => (
               <div key={item.label}>

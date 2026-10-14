@@ -10,10 +10,9 @@ import {
 
 import { loadEvidence } from "../../../controllers/evidenceController";
 import { loadAssessments } from "../../../controllers/assessmentController";
-import assuranceResults from "../../../data/assurance-results.json";
+import { getAssuranceResults } from "../../../services/assuranceService";
 
 import type { Evidence } from "../../../models/evidence.model";
-import type { AssuranceResult } from "../../../models/assurance.model";
 
 interface EvidenceContext {
   evidence: Evidence;
@@ -37,7 +36,7 @@ function domainLabel(domain: string) {
 export default function EvidencePage() {
   const assessments = loadAssessments();
   const evidenceRecords = loadEvidence();
-  const results = assuranceResults as AssuranceResult[];
+  const results = getAssuranceResults();
 
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");

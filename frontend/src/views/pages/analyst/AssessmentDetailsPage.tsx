@@ -72,14 +72,22 @@ export default function AssessmentDetailsPage() {
       return;
     }
 
-    const loaded = loadAssessmentDetails(id);
+    const refresh = () => {
+      setDetails(loadAssessmentDetails(id));
+      setProcessing(getProcessingState(id));
+      setAssurance(loadAssuranceResult(id));
+    };
 
-    setDetails(loaded);
+    refresh();
 
-    setProcessing(getProcessingState(id));
-
-    setAssurance(loadAssuranceResult(id));
+    window.addEventListener("assure_data_updated", refresh);
+    window.addEventListener("assurance:assessment-updated", refresh);
+    return () => {
+      window.removeEventListener("assure_data_updated", refresh);
+      window.removeEventListener("assurance:assessment-updated", refresh);
+    };
   }, [id]);
+
 
   /*
    * AUTOMATIC PROCESSING

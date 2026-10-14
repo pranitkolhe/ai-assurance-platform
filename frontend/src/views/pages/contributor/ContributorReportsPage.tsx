@@ -9,14 +9,17 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "../../../context/AuthContext";
-import { loadAssessments } from "../../../controllers/assessmentController";
+import { useLiveAssessments } from "../../../controllers/assessmentController";
 import { loadRiskDecision } from "../../../controllers/riskDecisionController";
 import { loadAssuranceResult } from "../../../services/assuranceService";
+import type { Assessment } from "../../../models/assessment.model";
+
 
 export default function ContributorReportsPage() {
   const { user } = useAuth();
 
-  const assessments = loadAssessments();
+  const assessments = useLiveAssessments();
+
 
   const myAssessments = useMemo(() => {
     if (!user) return [];
@@ -112,8 +115,9 @@ export default function ContributorReportsPage() {
 function ReportRow({
   assessment,
 }: {
-  assessment: ReturnType<typeof loadAssessments>[number];
+  assessment: Assessment;
 }) {
+
   const result = loadAssuranceResult(assessment.id);
   const decision = loadRiskDecision(assessment.id);
 

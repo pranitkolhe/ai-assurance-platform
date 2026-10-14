@@ -11,27 +11,25 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "../../../context/AuthContext";
-import { loadAssessments } from "../../../controllers/assessmentController";
-import { getAllAssets } from "../../../services/assessmentService";
+import { useLiveAssessments, useLiveAssets } from "../../../controllers/assessmentController";
 
 export default function ContributorDashboard() {
   const { user } = useAuth();
+  const allAssessments = useLiveAssessments();
+  const allAssets = useLiveAssets();
 
   if (!user) {
     return null;
   }
 
-  const allAssessments = loadAssessments();
-
   const assessments = allAssessments.filter(
     (assessment) => assessment.contributorId === user.id,
   );
 
-  const allAssets = getAllAssets();
-
   const assets = allAssets.filter((asset) =>
     assessments.some((assessment) => assessment.id === asset.assessmentId),
   );
+
 
   const processingCount = assessments.filter(
     (assessment) =>

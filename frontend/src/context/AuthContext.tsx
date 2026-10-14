@@ -1,11 +1,16 @@
 import { createContext, useContext, useState } from "react";
 import type { ReactNode } from "react";
-import type { User, UserRole } from "../models/user.model";
-import users from "../data/users.json";
+import type { User } from "../models/user.model";
+
+interface TokenResponse {
+  access_token: string;
+  token_type: string;
+  user: User;
+}
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => boolean;
+  login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
 }
 
@@ -14,38 +19,36 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(() => {
     const savedUser = localStorage.getItem("assure_user");
-
     return savedUser ? (JSON.parse(savedUser) as User) : null;
   });
 
-  const login = (email: string, password: string) => {
-    const foundUser = users.find(
-      (item) => item.email === email && item.password === password,
-    );
+  const login = async (email: string, password: string): Promise<boolean> => {
+    try {
+      const res = await fetch("/api/v1/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-    if (!foundUser) {
+      if (res.ok) {
+        const data: TokenResponse = await res.json();
+        setUser(data.user);
+        localStorage.setItem("assure_user", JSON.stringify(data.user));
+        localStorage.setItem("assure_token", data.access_token);
+        return true;
+      }
+      return false;
+    } catch {
       return false;
     }
-
-    const authenticatedUser: User = {
-      id: foundUser.id,
-      name: foundUser.name,
-      email: foundUser.email,
-      password: foundUser.password,
-      role: foundUser.role as UserRole,
-      status: foundUser.status as User["status"],
-    };
-
-    setUser(authenticatedUser);
-
-    localStorage.setItem("assure_user", JSON.stringify(authenticatedUser));
-
-    return true;
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem("assure_user");
+    localStorage.removeItem("assure_token");
+    localStorage.removeItem("assure_assessments");
+    localStorage.removeItem("assure_assets");
   };
 
   return (
@@ -57,10 +60,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-
   if (!context) {
     throw new Error("useAuth must be used inside AuthProvider");
   }
-
   return context;
 }

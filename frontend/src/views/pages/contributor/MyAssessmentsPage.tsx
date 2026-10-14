@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ClipboardList, Eye, Search } from "lucide-react";
 
 import { useAuth } from "../../../context/AuthContext";
-import { loadAssessments } from "../../../controllers/assessmentController";
+import { useLiveAssessments } from "../../../controllers/assessmentController";
 
 export default function MyAssessmentsPage() {
   const { user } = useAuth();
@@ -12,7 +12,8 @@ export default function MyAssessmentsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [riskFilter, setRiskFilter] = useState("all");
 
-  const allAssessments = loadAssessments();
+  const allAssessments = useLiveAssessments();
+
 
   const myAssessments = useMemo(() => {
     if (!user) {
