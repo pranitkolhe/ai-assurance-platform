@@ -1,0 +1,1 @@
+"""Manifest format builder."""

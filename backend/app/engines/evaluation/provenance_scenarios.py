@@ -1,0 +1,1 @@
+"""Tampered manifest attack scenarios."""

@@ -1,0 +1,1 @@
+"""Public key registry manager."""
