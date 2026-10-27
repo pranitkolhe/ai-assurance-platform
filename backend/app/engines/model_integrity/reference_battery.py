@@ -1,1 +1,0 @@
-"""Reference evaluation benchmark suite."""

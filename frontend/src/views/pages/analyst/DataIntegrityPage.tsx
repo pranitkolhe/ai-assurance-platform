@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   Link,
   useSearchParams,
@@ -17,12 +17,19 @@ import {
 
 import {
   loadAssessmentDetails,
-  loadAssessments,
+  loadAssessmentsWithAssetType,
+  useLiveAssessments,
+  useLiveAssets,
 } from '../../../controllers/assessmentController'
 
 import {
   loadAssuranceResult,
 } from '../../../controllers/assuranceController'
+
+import {
+  fetchDatasetIntegrity,
+  type DatasetIntegrityLegacy,
+} from '../../../services/engineService'
 
 import type {
   AssuranceDomainResult,
@@ -101,16 +108,19 @@ export default function DataIntegrityPage() {
 }
 
 function DataIntegrityOverview() {
-  const assessments =
-    loadAssessments()
+  // Live sync: these hooks fetch assessments + assets from the
+  // backend on mount, so a dataset uploaded by a contributor
+  // appears here without a manual refresh. The filter below then
+  // reads the synced local cache on every re-render.
+  const liveAssessments = useLiveAssessments()
+  useLiveAssets()
 
   const availableAssessments =
     useMemo(() => {
-      return assessments.filter(
-        (assessment) =>
-          assessment.status !== 'draft',
-      )
-    }, [assessments])
+      // Only assessments that actually contain a dataset asset.
+      // An assessment with only a model asset must not appear here.
+      return loadAssessmentsWithAssetType('dataset')
+    }, [liveAssessments])
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -268,6 +278,62 @@ function DataIntegrityOverview() {
   )
 }
 
+/* Live backend check: this is what makes a newly uploaded dataset
+ * actually appear on this page. The old page only showed a local
+ * assurance result, so a backend-only upload never showed up here.
+ * This component calls GET /datasets/{asset_id}/integrity, which
+ * runs the real data-integrity service (8101) on the stored file.
+ */
+function LiveDataIntegrityCheck({ assetId }: { assetId: string }) {
+  const [result, setResult] = useState<DatasetIntegrityLegacy | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    let cancelled = false
+    setLoading(true)
+    setError('')
+    fetchDatasetIntegrity(assetId)
+      .then((r) => { if (!cancelled) setResult(r) })
+      .catch((err: unknown) => {
+        if (cancelled) return
+        const msg = err instanceof Error ? err.message : ''
+        if (assetId.startsWith('DATA-') || assetId.startsWith('ASM-')) {
+          setError('This asset only exists in local storage, not in the backend database. Re-upload it from the contributor side so the backend stores it, then reopen this page.')
+        } else if (msg.includes('503') || msg.toLowerCase().includes('unavailable')) {
+          setError('Data-integrity service (8101) is not running. Start it, then reopen this page.')
+        } else {
+          setError(msg || 'Live data-integrity check failed.')
+        }
+      })
+      .finally(() => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
+  }, [assetId])
+
+  return (
+    <div className="rounded-2xl border border-blue-200 bg-blue-50/50 p-5 shadow-sm">
+      <h2 className="text-sm font-bold text-slate-900">Live data-integrity check (backend, service 8101)</h2>
+      {loading && <p className="mt-2 text-sm text-slate-500">Running the real service on the stored dataset…</p>}
+      {!loading && error && (
+        <p className="mt-2 text-sm leading-6 text-amber-700">{error}</p>
+      )}
+      {!loading && result && (
+        <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div><p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Valid</p><p className="mt-1 font-bold text-slate-900">{result.valid ? 'Yes' : 'No — review findings'}</p></div>
+          <div><p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Images</p><p className="mt-1 font-bold text-slate-900">{result.total_images}</p></div>
+          <div><p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Annotations</p><p className="mt-1 font-bold text-slate-900">{result.total_annotations}</p></div>
+          <div><p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Duplicates / corrupt</p><p className="mt-1 font-bold text-slate-900">{result.duplicate_count} / {result.corrupt_samples_count}</p></div>
+        </div>
+      )}
+      {!loading && result && result.warnings.length > 0 && (
+        <ul className="mt-4 space-y-1 text-sm text-slate-600">
+          {result.warnings.map((w, i) => <li key={i}>• {w}</li>)}
+        </ul>
+      )}
+    </div>
+  )
+}
+
 function DataIntegrityReport({
   assessmentId,
 }: {
@@ -402,6 +468,7 @@ function DataIntegrityReport({
         </section>
       ) : (
         <>
+          <LiveDataIntegrityCheck assetId={datasetAsset.id} />
           <section className="grid gap-4 md:grid-cols-3">
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">

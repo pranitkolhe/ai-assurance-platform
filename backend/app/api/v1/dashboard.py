@@ -6,7 +6,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.db.session import get_db
+from app.dependencies import get_current_user
 from app.db.models.assessment import Assessment
+from app.db.models.user import User
 from app.db.models.asset import Asset
 from app.db.models.finding import Finding
 from app.schemas.dashboard import (
@@ -22,7 +24,7 @@ router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
 
 @router.get("/analyst", response_model=AnalystDashboardData)
-async def get_analyst_dashboard(db: AsyncSession = Depends(get_db)):
+async def get_analyst_dashboard(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     """Fetch live dashboard statistics directly from PostgreSQL."""
     # 1. Active assessments count
     active_stmt = select(func.count(Assessment.id)).where(
@@ -114,10 +116,17 @@ async def get_analyst_dashboard(db: AsyncSession = Depends(get_db)):
         ],
         queue=queue_items,
         findings=findings_items,
+        # NOTE: the old code returned fixed 98/95/100/92 here, which
+        # looked like live engine scores but was not computed from
+        # anything. Until the assurance aggregation (Phase 5) backs
+        # this summary with real engine results, it is honestly 0
+        # ("no engine aggregate yet") rather than a fake percentage.
+        # Use GET /assurance-lab/{assessment_id}/results for live
+        # per-assessment engine scores.
         assurance_summary=AssuranceSummary(
-            data_integrity=100 if active_count == 0 else 98,
-            model_integrity=100 if active_count == 0 else 95,
-            inference_verification=100,
-            distribution_analysis=100 if active_count == 0 else 92,
+            data_integrity=0,
+            model_integrity=0,
+            inference_verification=0,
+            distribution_analysis=0,
         ),
     )

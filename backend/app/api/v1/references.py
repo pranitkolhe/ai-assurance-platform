@@ -3,15 +3,18 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
+from app.dependencies import get_current_user
 from app.db.models.reference import Reference
+from app.db.models.user import User
 from app.db.repositories.reference_repository import ReferenceRepository
 from app.schemas.reference import ReferenceCreate, ReferenceResponse
 
 router = APIRouter(prefix="/references", tags=["references"])
 
 
+@router.get("", response_model=list[ReferenceResponse])
 @router.get("/", response_model=list[ReferenceResponse])
-async def list_references(type: str | None = None, db: AsyncSession = Depends(get_db)):
+async def list_references(type: str | None = None, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     repo = ReferenceRepository(db)
     refs = await repo.get_all(ref_type=type)
     return [
@@ -31,8 +34,9 @@ async def list_references(type: str | None = None, db: AsyncSession = Depends(ge
     ]
 
 
+@router.post("", response_model=ReferenceResponse)
 @router.post("/", response_model=ReferenceResponse)
-async def create_reference(payload: ReferenceCreate, db: AsyncSession = Depends(get_db)):
+async def create_reference(payload: ReferenceCreate, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     repo = ReferenceRepository(db)
     ref = Reference(
         name=payload.name,

@@ -311,26 +311,39 @@ export default function SubmitAssetPage() {
     setError("");
     setIsSubmitting(true);
 
+    let createdIdForRetry = createdAssessmentId;
     try {
       /*
-       * 1. Create the assessment in PostgreSQL backend.
+       * 1. Create the assessment in the backend database.
+       *    If a previous submit created the assessment but an upload
+       *    failed, reuse that assessment id instead of creating a
+       *    duplicate assessment on retry.
        */
-      const assessment = await createAssessment({
-        name: assessmentName.trim(),
-        contributorId: user.id,
-        contributorName: user.name,
-        useCase: useCase.trim(),
-        task,
-      });
+      let assessmentId = createdIdForRetry;
+      if (!assessmentId) {
+        const assessment = await createAssessment({
+          name: assessmentName.trim(),
+          contributorId: user.id,
+          contributorName: user.name,
+          useCase: useCase.trim(),
+          task,
+        });
+        assessmentId = assessment.id;
+        createdIdForRetry = assessmentId;
+        setCreatedAssessmentId(assessmentId);
+      }
 
       /*
        * 2. Stream uploaded assets directly to FastAPI server
        *    where SHA256 checksums are calculated and records stored in PostgreSQL.
+       *    If any upload fails, this throws and the success screen
+       *    is NOT shown — the error below is shown instead, with the
+       *    assessment id kept so a retry does not duplicate it.
        */
       for (const pendingAsset of pendingAssets) {
         await uploadAssetFile(
           pendingAsset.file,
-          assessment.id,
+          assessmentId,
           pendingAsset.type,
           pendingAsset.format,
         );
@@ -343,7 +356,7 @@ export default function SubmitAssetPage() {
        *    and stored.
        */
 
-      setCreatedAssessmentId(assessment.id);
+      setCreatedAssessmentId(assessmentId);
 
       setSubmitted(true);
 
@@ -351,9 +364,12 @@ export default function SubmitAssetPage() {
       setUseCase("");
       setTask("");
       setPendingAssets([]);
-    } catch {
+    } catch (err) {
+      const detail = err instanceof Error ? err.message : "";
       setError(
-        "Unable to submit the assessment or store the uploaded asset. Please try again.",
+        createdIdForRetry
+          ? `Assessment ${createdIdForRetry} was created, but an upload failed${detail ? `: ${detail}` : ""}. Fix the file and submit again — it will reuse this assessment instead of creating a duplicate.`
+          : `Unable to submit the assessment or store the uploaded asset${detail ? `: ${detail}` : ""}. Nothing was marked as submitted — please try again.`,
       );
     } finally {
       setIsSubmitting(false);

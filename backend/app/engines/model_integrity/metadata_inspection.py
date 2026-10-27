@@ -1,1 +1,0 @@
-"""Model architecture metadata extractor."""

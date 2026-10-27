@@ -10,6 +10,7 @@ from app.dependencies import require_role
 router = APIRouter(prefix="/users", tags=["users"], dependencies=[Depends(require_role(["admin"]))])
 
 
+@router.get("", response_model=list[UserResponse])
 @router.get("/", response_model=list[UserResponse])
 async def list_users(db: AsyncSession = Depends(get_db)):
     repo = UserRepository(db)

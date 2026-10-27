@@ -1,35 +1,41 @@
 # Python
 __pycache__/
 *.py[cod]
-*$py.class
-*.so
-
-# Virtual environments
-.venv/
+*.pyo
 venv/
-ENV/
-
-# Environment
-.env
-
-# Data
-data/
-
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# Distribution
-dist/
-build/
+.venv/
 *.egg-info/
-
-# Testing
-.coverage
-htmlcov/
 .pytest_cache/
 
-# mypy
-.mypy_cache/
+# Node / frontend
+node_modules/
+frontend/dist/
+frontend/.vite/
+*.local
+
+# Environment and secrets -- NEVER commit these
+.env
+.env.local
+*.pem
+*.key
+
+# Data, uploads, models, databases (large / private / generated)
+data/uploads/
+data/models/
+data/reports/
+data/quarantine/
+data/embeddings/
+backend/data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Test datasets are kept, but large real datasets are not:
+# data/test-datasets/ is intentionally NOT ignored (small, synthetic
+# or team-generated test sets only). Do not commit large downloads.
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
+*.log

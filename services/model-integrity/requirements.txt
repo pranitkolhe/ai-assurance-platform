@@ -1,0 +1,7 @@
+fastapi==0.115.0
+uvicorn[standard]==0.30.0
+# TODO (assignee): add torch and onnxruntime here when loading is
+# implemented. Keep them in THIS service only -- the backend must
+# stay light and must not gain torch as a dependency.
+# torch
+# onnxruntime

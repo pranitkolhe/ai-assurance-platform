@@ -1,4 +1,4 @@
-import { apiRequest } from "../api/client";
+import { apiRequest, ApiError } from "../api/client";
 import type { Reference, ReferenceType } from "../models/reference.model";
 
 const REFS_KEY = "assure_references";
@@ -23,7 +23,10 @@ export async function syncReferencesFromApi(): Promise<Reference[]> {
     const liveRefs = await apiRequest<Reference[]>("/references");
     writeStoredReferences(liveRefs);
     return liveRefs;
-  } catch {
+  } catch (err) {
+    if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+      throw err;
+    }
     return readStoredReferences();
   }
 }

@@ -24,6 +24,7 @@ from app.schemas.common import SuccessResponse
 router = APIRouter(prefix="/assessments", tags=["assessments"])
 
 
+@router.get("", response_model=list[AssessmentResponse])
 @router.get("/", response_model=list[AssessmentResponse])
 async def list_assessments(
     status_filter: str | None = Query(None, alias="status"),
@@ -68,7 +69,7 @@ async def list_assessments(
 
 
 @router.get("/{assessment_id}", response_model=AssessmentDetailResponse)
-async def get_assessment(assessment_id: str, db: AsyncSession = Depends(get_db)) -> AssessmentDetailResponse:
+async def get_assessment(assessment_id: str, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)) -> AssessmentDetailResponse:
     """Return a single assessment with its assets and findings count."""
     repo = AssessmentRepository(db)
     assessment = await repo.get_by_id(assessment_id)
@@ -108,8 +109,9 @@ async def get_assessment(assessment_id: str, db: AsyncSession = Depends(get_db))
     )
 
 
+@router.post("", response_model=AssessmentResponse, status_code=status.HTTP_201_CREATED)
 @router.post("/", response_model=AssessmentResponse, status_code=status.HTTP_201_CREATED)
-async def create_assessment(payload: AssessmentCreate, db: AsyncSession = Depends(get_db)) -> AssessmentResponse:
+async def create_assessment(payload: AssessmentCreate, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)) -> AssessmentResponse:
     """Create a new assessment."""
     repo = AssessmentRepository(db)
     assessment = Assessment(
@@ -137,7 +139,7 @@ async def create_assessment(payload: AssessmentCreate, db: AsyncSession = Depend
 
 
 @router.delete("/{assessment_id}", response_model=SuccessResponse)
-async def delete_assessment(assessment_id: str, db: AsyncSession = Depends(get_db)) -> SuccessResponse:
+async def delete_assessment(assessment_id: str, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)) -> SuccessResponse:
     """Delete an assessment."""
     repo = AssessmentRepository(db)
     assessment = await repo.get_by_id(assessment_id)

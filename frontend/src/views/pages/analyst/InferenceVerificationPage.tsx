@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
   Activity,
@@ -12,9 +12,13 @@ import {
   XCircle,
 } from "lucide-react";
 
-import { loadAssessmentDetails } from "../../../controllers/assessmentController";
+import {
+  loadAssessmentDetails,
+  loadAssessmentsWithAssetType,
+  useLiveAssessments,
+  useLiveAssets,
+} from "../../../controllers/assessmentController";
 import { loadAssuranceResult } from "../../../controllers/assuranceController";
-import { getAssessments } from "../../../services/assessmentService";
 
 import type { Assessment } from "../../../models/assessment.model";
 import type { Asset } from "../../../models/asset.model";
@@ -88,7 +92,15 @@ function VerificationStatusIcon({
 /* -------------------------------------------------------------------------- */
 
 function InferenceVerificationOverview() {
-  const assessments = getAssessments();
+  const liveAssessments = useLiveAssessments();
+  useLiveAssets();
+  // Only assessments that actually contain an inference asset.
+  // Recomputed when the live sync returns, so a newly uploaded
+  // inference asset appears without a manual refresh.
+  const assessments = useMemo(
+    () => loadAssessmentsWithAssetType("inference"),
+    [liveAssessments],
+  );
 
   return (
     <div className="space-y-8">

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
   Activity,
@@ -12,9 +12,13 @@ import {
   XCircle,
 } from "lucide-react";
 
-import { loadAssessmentDetails } from "../../../controllers/assessmentController";
+import {
+  loadAssessmentDetails,
+  loadAssessmentsWithAssetType,
+  useLiveAssessments,
+  useLiveAssets,
+} from "../../../controllers/assessmentController";
 import { loadAssuranceResult } from "../../../controllers/assuranceController";
-import { getAssessments } from "../../../services/assessmentService";
 
 import type { Assessment } from "../../../models/assessment.model";
 import type { Asset } from "../../../models/asset.model";
@@ -84,7 +88,13 @@ function StatusIcon({ status }: { status: "pass" | "warning" | "fail" }) {
 /* -------------------------------------------------------------------------- */
 
 function DistributionAnalysisOverview() {
-  const assessments = getAssessments();
+  const liveAssessments = useLiveAssessments();
+  useLiveAssets();
+  // Only assessments that actually contain a dataset asset.
+  const assessments = useMemo(
+    () => loadAssessmentsWithAssetType("dataset"),
+    [liveAssessments],
+  );
 
   return (
     <div className="space-y-8">

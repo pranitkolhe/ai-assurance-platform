@@ -1,4 +1,4 @@
-import { apiRequest } from "../api/client";
+import { apiRequest, ApiError } from "../api/client";
 import type { AssuranceResult } from "../models/assurance.model";
 
 const ASSURANCE_RESULTS_KEY = "assure_results";
@@ -34,7 +34,10 @@ export async function fetchAssuranceResultFromApi(
     }
     writeStoredResults(stored);
     return result;
-  } catch {
+  } catch (err) {
+    if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+      throw err;
+    }
     return getAssuranceResult(assessmentId);
   }
 }

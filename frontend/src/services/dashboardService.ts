@@ -1,4 +1,4 @@
-import { apiRequest } from "../api/client";
+import { apiRequest, ApiError } from "../api/client";
 import type { AnalystDashboardData } from "../models/dashboard.model";
 
 const DEFAULT_DASHBOARD: AnalystDashboardData = {
@@ -10,11 +10,14 @@ const DEFAULT_DASHBOARD: AnalystDashboardData = {
   ],
   queue: [],
   findings: [],
+  // Honest defaults: 0, not 100. The backend dashboard summary is
+  // 0 until Phase 5 backs it with engine results (see backend
+  // dashboard.py). Showing 100 on a failed fetch was fake data.
   assuranceSummary: {
-    dataIntegrity: 100,
-    modelIntegrity: 100,
-    inferenceVerification: 100,
-    distributionAnalysis: 100,
+    dataIntegrity: 0,
+    modelIntegrity: 0,
+    inferenceVerification: 0,
+    distributionAnalysis: 0,
   },
 };
 
@@ -46,15 +49,18 @@ export async function fetchAnalystDashboard(): Promise<AnalystDashboardData> {
         assessmentId: f.assessmentId || f.assessment_id || "",
       })),
       assuranceSummary: {
-        dataIntegrity: summary.dataIntegrity ?? summary.data_integrity ?? 100,
-        modelIntegrity: summary.modelIntegrity ?? summary.model_integrity ?? 100,
-        inferenceVerification: summary.inferenceVerification ?? summary.inference_verification ?? 100,
-        distributionAnalysis: summary.distributionAnalysis ?? summary.distribution_analysis ?? 100,
+        dataIntegrity: summary.dataIntegrity ?? summary.data_integrity ?? 0,
+        modelIntegrity: summary.modelIntegrity ?? summary.model_integrity ?? 0,
+        inferenceVerification: summary.inferenceVerification ?? summary.inference_verification ?? 0,
+        distributionAnalysis: summary.distributionAnalysis ?? summary.distribution_analysis ?? 0,
       },
     };
     cachedDashboard = data;
     return data;
-  } catch {
+  } catch (err) {
+    if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+      throw err;
+    }
     return cachedDashboard;
   }
 }

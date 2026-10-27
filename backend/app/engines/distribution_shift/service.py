@@ -1,4 +1,50 @@
-"""Distribution shift engine coordinator."""
+"""Distribution-shift client for the standalone service on port 8105.
+
+Same pattern as dataset_integrity/service.py: never invent a result.
+If the distribution-shift service is not running, or returns an error,
+analyze() returns status "unavailable" so callers return HTTP 503.
+
+Service URL is taken from DISTRIBUTION_SHIFT_URL, defaulting to
+http://127.0.0.1:8105 (see services/distribution-shift/README.md).
+"""
+
+from __future__ import annotations
+
+import os
+
+import httpx
+
+
 class DistributionShiftService:
-    async def analyze_shift(self, baseline_ref_id: str, target_asset_id: str) -> dict:
-        return {"shift_detected": False, "wasserstein_distance": 0.02}
+    def __init__(self, base_url: str | None = None, timeout: float = 120.0):
+        self.base_url = (base_url or os.getenv(
+            "DISTRIBUTION_SHIFT_URL", "http://127.0.0.1:8105")).rstrip("/")
+        self.timeout = timeout
+
+    async def analyze(self, dataset_path: str,
+                      reference: dict | None = None) -> dict:
+        payload: dict = {"dataset_path": dataset_path}
+        if reference is not None:
+            payload["reference"] = reference
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                response = await client.post(
+                    f"{self.base_url}/analyze", json=payload)
+        except httpx.HTTPError as exc:
+            return self._unavailable_result(str(exc))
+        if response.status_code >= 400:
+            return self._unavailable_result(
+                f"Distribution-shift service returned HTTP {response.status_code}: "
+                f"{response.text[:200]}")
+        return response.json()
+
+    @staticmethod
+    def _unavailable_result(reason: str) -> dict:
+        return {
+            "domain": "distribution_shift",
+            "status": "unavailable",
+            "score": 0.0,
+            "confidence": 0.0,
+            "findings": [],
+            "limitations": [f"Distribution-shift service unavailable: {reason}"],
+        }

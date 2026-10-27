@@ -1,1 +1,0 @@
-"""Vision feature embedding extractor."""

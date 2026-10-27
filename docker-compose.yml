@@ -1,0 +1,52 @@
+# Docker Compose for the backend + engine services.
+#
+# This is for local / demo runs. The backend still needs a database:
+# set DATABASE_URL in .env (see .env.example) to a reachable Postgres,
+# or run the backend outside Compose with its own database.
+#
+# Usage: docker compose up --build
+# Backend: http://localhost:8000/docs
+# Services: 8101-8105 (see services/CONTRACT.md)
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATA_INTEGRITY_URL=http://data-integrity:8101
+      - MODEL_INTEGRITY_URL=http://model-integrity:8102
+      - BACKDOOR_URL=http://backdoor-assessment:8103
+      - PROVENANCE_URL=http://inference-provenance:8104
+      - DISTRIBUTION_SHIFT_URL=http://distribution-shift:8105
+    depends_on:
+      - data-integrity
+      - model-integrity
+      - backdoor-assessment
+      - inference-provenance
+      - distribution-shift
+
+  data-integrity:
+    build: ./services/data-integrity
+    ports:
+      - "8101:8101"
+
+  model-integrity:
+    build: ./services/model-integrity
+    ports:
+      - "8102:8102"
+
+  backdoor-assessment:
+    build: ./services/backdoor-assessment
+    ports:
+      - "8103:8103"
+
+  inference-provenance:
+    build: ./services/inference-provenance
+    ports:
+      - "8104:8104"
+
+  distribution-shift:
+    build: ./services/distribution-shift
+    ports:
+      - "8105:8105"

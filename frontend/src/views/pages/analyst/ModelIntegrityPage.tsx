@@ -17,7 +17,9 @@ import {
 
 import {
   loadAssessmentDetails,
-  loadAssessments,
+  loadAssessmentsWithAssetType,
+  useLiveAssessments,
+  useLiveAssets,
 } from '../../../controllers/assessmentController'
 
 import {
@@ -106,17 +108,15 @@ export default function ModelIntegrityPage() {
 }
 
 function ModelIntegrityOverview() {
-  const assessments =
-    loadAssessments()
+  const liveAssessments = useLiveAssessments()
+  useLiveAssets()
 
   const modelAssessments =
     useMemo(() => {
-      return assessments.filter(
-        (assessment) =>
-          assessment.status !==
-          'draft',
-      )
-    }, [assessments])
+      // Only assessments that actually contain a model asset.
+      // An assessment with only a dataset asset must not appear here.
+      return loadAssessmentsWithAssetType('model')
+    }, [liveAssessments])
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -149,12 +149,13 @@ function ModelIntegrityOverview() {
           />
 
           <p className="mt-3 text-sm font-semibold text-slate-700">
-            No assessments available
+            No model assets submitted yet
           </p>
 
           <p className="mt-1 text-sm text-slate-500">
-            There are currently no assessments available
-            for model integrity investigation.
+            Only assessments with a submitted model asset appear here.
+            Assessments with only a dataset or inference asset are
+            shown on their own pages, not here.
           </p>
         </div>
       ) : (

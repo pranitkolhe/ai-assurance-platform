@@ -1,0 +1,14 @@
+{
+  "images": [
+    {"id": 1, "file_name": "images/a.png"},
+    {"id": 2, "file_name": "images/b.png"}
+  ],
+  "annotations": [
+    {"id": 1, "image_id": 1, "category_id": 1, "bbox": [10, 10, 20, 20]},
+    {"id": 2, "image_id": 2, "category_id": 2, "bbox": [5, 5, 30, 30]}
+  ],
+  "categories": [
+    {"id": 1, "name": "car"},
+    {"id": 2, "name": "truck"}
+  ]
+}

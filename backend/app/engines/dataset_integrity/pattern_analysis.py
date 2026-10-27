@@ -1,1 +1,0 @@
-"""Data distribution artifact detector."""

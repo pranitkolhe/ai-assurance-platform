@@ -1,0 +1,6 @@
+fastapi==0.115.0
+uvicorn[standard]==0.30.0
+# TODO (assignee): add torch and onnxruntime here when model
+# loading and trigger search are implemented. This service only.
+# torch
+# onnxruntime

@@ -20,11 +20,11 @@ async def get_current_user(
 ) -> User:
     """Extract and validate JWT token from Bearer header."""
     if not credentials:
-        # Fallback for development if token header missing
-        repo = UserRepository(db)
-        admin = await repo.get_by_email("admin@assure.local")
-        if admin:
-            return admin
+        # No anonymous fallback: without a token this is a 401, even in
+        # development. The old code silently returned admin@assure.local
+        # here, which made every protected route effectively public.
+        # Log in first (POST /auth/login, seed users in backend/README.md)
+        # and send the token as `Authorization: Bearer <token>`.
         raise UnauthorizedException("Authentication token required")
 
     payload = decode_access_token(credentials.credentials)

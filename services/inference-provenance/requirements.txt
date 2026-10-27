@@ -1,0 +1,5 @@
+fastapi==0.115.0
+uvicorn[standard]==0.30.0
+# TODO (assignee): add cryptography here when Ed25519 signature
+# verification is implemented. This service only.
+# cryptography

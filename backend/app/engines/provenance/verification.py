@@ -1,1 +1,0 @@
-"""Public key signature verification."""

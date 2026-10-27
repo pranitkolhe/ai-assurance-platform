@@ -35,9 +35,25 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql+asyncpg://pranitkolhe@localhost:5432/assurance_dev"
 
     # Security
+    # WARNING: changing SECRET_KEY invalidates every token issued
+    # before the change, so users will get 401 until they log in
+    # again. That is exactly what happened when this default was
+    # changed in the 2026-10-27 restructure. Do NOT change this
+    # default casually. For production, set SECRET_KEY once in
+    # backend/.env and then never change it (see .env.example).
+    # This default is development-only, not production-safe.
     SECRET_KEY: str = "super-secret-key-change-in-production-cv-assurance"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 120
+
+    # Standalone engine services (see services/CONTRACT.md).
+    # Friends working on a service only need to change the URL for
+    # their service; the backend clients read these same env names.
+    DATA_INTEGRITY_URL: str = "http://127.0.0.1:8101"
+    MODEL_INTEGRITY_URL: str = "http://127.0.0.1:8102"
+    BACKDOOR_URL: str = "http://127.0.0.1:8103"
+    PROVENANCE_URL: str = "http://127.0.0.1:8104"
+    DISTRIBUTION_SHIFT_URL: str = "http://127.0.0.1:8105"
 
     # Storage Dirs
     UPLOAD_DIR: Path = Path("data/uploads")

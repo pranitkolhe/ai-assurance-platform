@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { apiRequest } from "../api/client";
+import { apiRequest, ApiError } from "../api/client";
 import type { Assessment } from "../models/assessment.model";
 import type { Asset } from "../models/asset.model";
 import type { ProcessingState } from "../models/processing.model";
@@ -107,7 +107,13 @@ export async function syncAssessmentsFromApi(): Promise<Assessment[]> {
     const normalized = backendAssessments.map(normalizeAssessment);
     writeAssessments(normalized);
     return normalized;
-  } catch {
+  } catch (err) {
+    // 401/403 is an auth problem, not "backend offline". Rethrow it
+    // so apiRequest's login redirect runs; falling back to stale
+    // localStorage here is what hid the 401s in the backend log.
+    if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+      throw err;
+    }
     return readStoredAssessments();
   }
 }
@@ -121,7 +127,10 @@ export async function syncAssetsFromApi(): Promise<Asset[]> {
     const normalized = backendAssets.map(normalizeAsset);
     writeAssets(normalized);
     return normalized;
-  } catch {
+  } catch (err) {
+    if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+      throw err;
+    }
     return readStoredAssets();
   }
 }
@@ -167,48 +176,34 @@ export async function createAssessment(
     "id" | "status" | "overallRisk" | "confidence" | "createdAt" | "processing"
   >,
 ): Promise<Assessment> {
-  let createdAssessment: Assessment | null = null;
-
-  try {
-    const res = await apiRequest<any>("/assessments", {
-      method: "POST",
-      body: JSON.stringify({
-        name: input.name,
-        contributor_id: input.contributorId,
-        contributorId: input.contributorId,
-        use_case: input.useCase,
-        useCase: input.useCase,
-        task: input.task,
-      }),
-    });
-    createdAssessment = normalizeAssessment(res);
-  } catch {
-    // If backend offline, generate fallback ID
-    const existing = getAssessments();
-    createdAssessment = {
-      ...input,
-      id: getNextId("ASM", existing.map((item) => item.id)),
-      status: "registered",
-      overallRisk: "medium",
-      confidence: 0,
-      createdAt: new Date().toISOString(),
-      processing: {
-        status: "queued",
-        progress: 0,
-        currentStep: "Waiting for analyst to start analysis",
-      },
-    };
-  }
-
+  // Sync fix (2026-10-27): NO local fallback here any more.
+  // The old code generated a fake ASM-xxx assessment in localStorage
+  // whenever the backend call failed, then the upload for that fake
+  // id failed on the backend foreign key, and the UI still said
+  // "Assessment Submitted" — while the analyst, syncing from the
+  // backend, could never see it. Now a backend failure is a real
+  // error: the submit page shows it and does NOT show success.
+  const res = await apiRequest<any>("/assessments", {
+    method: "POST",
+    body: JSON.stringify({
+      name: input.name,
+      contributor_id: input.contributorId,
+      contributorId: input.contributorId,
+      use_case: input.useCase,
+      useCase: input.useCase,
+      task: input.task,
+    }),
+  });
+  const createdAssessment = normalizeAssessment(res);
   const stored = readStoredAssessments();
-  const existingIdx = stored.findIndex((a) => a.id === createdAssessment!.id);
+  const existingIdx = stored.findIndex((a) => a.id === createdAssessment.id);
   if (existingIdx >= 0) {
-    stored[existingIdx] = createdAssessment!;
+    stored[existingIdx] = createdAssessment;
   } else {
-    stored.unshift(createdAssessment!);
+    stored.unshift(createdAssessment);
   }
   writeAssessments(stored);
-  return createdAssessment!;
+  return createdAssessment;
 }
 
 export async function uploadAssetFile(
@@ -223,29 +218,15 @@ export async function uploadAssetFile(
   formData.append("asset_type", assetType);
   formData.append("asset_format", assetFormat);
 
-  let uploaded: Asset;
-  try {
-    const res = await apiRequest<any>("/assets/upload", {
-      method: "POST",
-      body: formData,
-    });
-    uploaded = normalizeAsset(res);
-  } catch {
-    // Fallback if offline
-    const prefix = assetType === "dataset" ? "DATA" : assetType === "model" ? "MODEL" : "INF";
-    uploaded = {
-      id: getNextId(prefix, getAllAssets().map((a) => a.id)),
-      assessmentId,
-      type: assetType as any,
-      name: file.name,
-      format: assetFormat,
-      size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
-      sha256: "calculating...",
-      status: "submitted",
-      uploadedAt: new Date().toISOString(),
-    };
-  }
-
+  // Sync fix (2026-10-27): NO local fallback here any more, for
+  // the same reason as createAssessment above. A fake DATA-xxx
+  // asset with sha256 "calculating..." could never be analysed by
+  // the backend and never appeared for the analyst.
+  const res = await apiRequest<any>("/assets/upload", {
+    method: "POST",
+    body: formData,
+  });
+  const uploaded = normalizeAsset(res);
   const stored = readStoredAssets();
   stored.unshift(uploaded);
   writeAssets(stored);

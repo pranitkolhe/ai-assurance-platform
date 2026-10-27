@@ -34,6 +34,8 @@ import FlaggedImagesPage from "./views/pages/analyst/FlaggedImagesPage";
 import FlaggedImageDetailsPage from "./views/pages/analyst/FlaggedImageDetailsPage";
 import EvidencePage from "./views/pages/analyst/EvidencePage";
 import RiskAssessmentPage from "./views/pages/analyst/RiskAssessmentPage";
+import AnalystReportsPage from "./views/pages/analyst/AnalystReportsPage";
+import AnalystReportDetailsPage from "./views/pages/analyst/AnalystReportDetailsPage";
 
 function RoleRedirect() {
   return <Navigate to="/login" replace />;
@@ -150,6 +152,13 @@ export default function App() {
               />
 
               <Route path="/analyst/findings" element={<FindingsPage />} />
+
+              <Route path="/analyst/reports" element={<AnalystReportsPage />} />
+
+              <Route
+                path="/analyst/reports/:id"
+                element={<AnalystReportDetailsPage />}
+              />
             </Route>
           </Route>
 
