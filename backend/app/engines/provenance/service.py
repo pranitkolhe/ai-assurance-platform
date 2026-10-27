@@ -14,6 +14,8 @@ import os
 
 import httpx
 
+from app.engines.paths import resolve_engine_path
+
 
 class ProvenanceService:
     def __init__(self, base_url: str | None = None, timeout: float = 60.0):
@@ -25,7 +27,7 @@ class ProvenanceService:
                      asset_path: str | None = None) -> dict:
         payload: dict = {"manifest": manifest}
         if asset_path:
-            payload["asset_path"] = asset_path
+            payload["asset_path"] = resolve_engine_path(asset_path)
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
                 response = await client.post(

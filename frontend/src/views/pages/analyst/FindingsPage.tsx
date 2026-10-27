@@ -9,8 +9,8 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 
-import { loadAssessments } from "../../../controllers/assessmentController";
-import { getAssuranceResults } from "../../../services/assuranceService";
+import { useLiveAssessments } from "../../../controllers/assessmentController";
+import { useLiveAssuranceResults } from "../../../services/liveAssuranceService";
 
 import type { Severity } from "../../../models/finding.model";
 
@@ -79,8 +79,8 @@ function getDomainPath(domain: string, assessmentId: string) {
 }
 
 export default function FindingsPage() {
-  const assessments = loadAssessments();
-  const results = getAssuranceResults();
+  const assessments = useLiveAssessments();
+  const { results } = useLiveAssuranceResults();
 
   const [search, setSearch] = useState("");
   const [severityFilter, setSeverityFilter] = useState("all");

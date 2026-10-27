@@ -15,6 +15,8 @@ import os
 
 import httpx
 
+from app.engines.paths import resolve_engine_path
+
 
 class DatasetIntegrityService:
     def __init__(self, base_url: str | None = None, timeout: float = 60.0):
@@ -25,7 +27,7 @@ class DatasetIntegrityService:
     async def analyze(self, dataset_path: str,
                       format_hint: str | None = None,
                       reference: dict | None = None) -> dict:
-        payload: dict = {"dataset_path": dataset_path}
+        payload: dict = {"dataset_path": resolve_engine_path(dataset_path)}
         if format_hint:
             payload["format"] = format_hint
         if reference is not None:

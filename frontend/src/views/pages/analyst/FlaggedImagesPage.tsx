@@ -1,9 +1,9 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { CheckCircle2, Eye, Search, SlidersHorizontal } from "lucide-react";
 
-import { loadAssessments } from "../../../controllers/assessmentController";
-import { loadFlaggedImages } from "../../../controllers/flaggedImageController";
+import { useLiveAssessments } from "../../../controllers/assessmentController";
+import { useLiveAssuranceResults } from "../../../services/liveAssuranceService";
 
 import type { Severity } from "../../../models/finding.model";
 import type { FlaggedImage } from "../../../models/flaggedImage.model";
@@ -37,8 +37,52 @@ function statusClass(status: string) {
 }
 
 export default function FlaggedImagesPage() {
-  const assessments = loadAssessments();
-  const flaggedImages = loadFlaggedImages();
+  const assessments = useLiveAssessments();
+  const { results } = useLiveAssuranceResults();
+
+  // Derive flagged images from live findings (2026-10-27):
+  // previously this read only assure_flagged_images in localStorage,
+  // which nothing ever wrote. Each affected asset name in a finding
+  // becomes one flagged image row. Findings with no affected assets
+  // (e.g. unknown image id) have no file to show, so they are skipped.
+  const flaggedImages: FlaggedImage[] = useMemo(() => {
+    const rows: FlaggedImage[] = [];
+    for (const result of results) {
+      for (const domain of result.domains) {
+        for (const finding of domain.findings) {
+          for (const assetName of finding.affectedAssets ?? []) {
+            const base = assetName.split("/").pop() ?? assetName;
+            rows.push({
+              id: `${result.assessmentId}-${finding.id}-${base}`,
+              assessmentId: result.assessmentId,
+              assetId: "",
+              findingId: finding.id,
+              domain: domain.domain,
+              imageName: base,
+              imagePath: assetName,
+              findingTitle: finding.title,
+              description: finding.description,
+              severity: finding.severity,
+              confidence: finding.confidence,
+              detectionMethod: finding.detectionMethod,
+              status: "open",
+            });
+          }
+        }
+      }
+    }
+    return rows;
+  }, [results]);
+
+  // Keep the detail page working: it reads assure_flagged_images
+  // from localStorage, so mirror the live-derived rows there.
+  useEffect(() => {
+    try {
+      localStorage.setItem("assure_flagged_images", JSON.stringify(flaggedImages));
+    } catch {
+      // ignore storage errors, list above still renders
+    }
+  }, [flaggedImages]);
 
   const [search, setSearch] = useState("");
   const [assessmentFilter, setAssessmentFilter] = useState("all");

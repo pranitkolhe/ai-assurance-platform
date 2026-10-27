@@ -56,12 +56,23 @@ class Settings(BaseSettings):
     DISTRIBUTION_SHIFT_URL: str = "http://127.0.0.1:8105"
 
     # Storage Dirs
-    UPLOAD_DIR: Path = Path("data/uploads")
-    MODEL_DIR: Path = Path("data/models")
-    REPORT_DIR: Path = Path("data/reports")
-    REFERENCE_DIR: Path = Path("data/reference")
-    EMBEDDING_DIR: Path = Path("data/embeddings")
-    QUARANTINE_DIR: Path = Path("data/quarantine")
+    # Path fix (2026-10-27, re-applied 2026-10-27 after the first
+    # copy was lost): these MUST be absolute and anchored to the
+    # backend folder, not relative to the process working
+    # directory. Previously UPLOAD_DIR was Path("data/uploads"), so
+    # a file stored by a backend started in backend/ was recorded
+    # as "data/uploads/...", and a service started in
+    # services/data-integrity/ looked for that relative path under
+    # its own folder, found nothing, and returned 404 -> backend
+    # 503. Anchoring here makes file_path independent of where
+    # any process was started from.
+    # config.py lives in backend/app/, so parents[1] is backend/.
+    UPLOAD_DIR: Path = Path(__file__).resolve().parents[1] / "data" / "uploads"
+    MODEL_DIR: Path = Path(__file__).resolve().parents[1] / "data" / "models"
+    REPORT_DIR: Path = Path(__file__).resolve().parents[1] / "data" / "reports"
+    REFERENCE_DIR: Path = Path(__file__).resolve().parents[1] / "data" / "reference"
+    EMBEDDING_DIR: Path = Path(__file__).resolve().parents[1] / "data" / "embeddings"
+    QUARANTINE_DIR: Path = Path(__file__).resolve().parents[1] / "data" / "quarantine"
 
     # Networking & Uploads
     CORS_ORIGINS: list[str] = Field(default=["http://localhost:5173", "http://127.0.0.1:5173"])

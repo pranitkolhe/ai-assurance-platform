@@ -14,6 +14,8 @@ import os
 
 import httpx
 
+from app.engines.paths import resolve_engine_path
+
 
 class BackdoorAssessmentService:
     def __init__(self, base_url: str | None = None, timeout: float = 300.0):
@@ -25,9 +27,9 @@ class BackdoorAssessmentService:
                       clean_dataset_path: str | None = None,
                       reference: dict | None = None,
                       access_level: str | None = None) -> dict:
-        payload: dict = {"model_path": model_path}
+        payload: dict = {"model_path": resolve_engine_path(model_path)}
         if clean_dataset_path:
-            payload["clean_dataset_path"] = clean_dataset_path
+            payload["clean_dataset_path"] = resolve_engine_path(clean_dataset_path)
         if reference is not None:
             payload["reference"] = reference
         if access_level:

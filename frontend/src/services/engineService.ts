@@ -91,6 +91,9 @@ export interface DatasetIntegrityLegacy {
   duplicate_count: number;
   corrupt_samples_count: number;
   warnings: string[];
+  score?: number;
+  confidence?: number;
+  engine_status?: string;
 }
 
 export async function fetchDatasetIntegrity(assetId: string): Promise<DatasetIntegrityLegacy> {

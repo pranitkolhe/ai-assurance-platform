@@ -25,6 +25,7 @@ export interface AssuranceFinding {
   confidence: number;
   affectedSamples: number;
   detectionMethod: string;
+  affectedAssets?: string[];
 }
 
 export interface AssuranceDomainResult {

@@ -14,9 +14,9 @@ import {
 
 import {
   loadAssessmentDetails,
-  loadAssessments,
+  useLiveAssessments,
 } from "../../../controllers/assessmentController";
-import { loadAssuranceResult } from "../../../controllers/assuranceController";
+import { useLiveAssuranceResults } from "../../../services/liveAssuranceService";
 import {
   recordRiskDecision,
   loadRiskDecision,
@@ -713,32 +713,20 @@ export default function RiskAssessmentPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const assessmentId = searchParams.get("assessment");
 
-  const [contexts, setContexts] = useState<AssessmentRiskContext[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Live sync (2026-10-27): previously this polled only the
+  // localStorage cache, which the live engine never filled, so
+  // risk stayed empty. Now it fetches assurance-lab results live.
+  const assessments = useLiveAssessments();
+  const { results, loading } = useLiveAssuranceResults();
 
-  useEffect(() => {
-    const loadData = () => {
-      const assessments = loadAssessments();
-
-      const nextContexts: AssessmentRiskContext[] = assessments.map(
-        (assessment) => ({
-          assessment,
-          result: loadAssuranceResult(assessment.id),
-        }),
-      );
-
-      setContexts(nextContexts);
-      setLoading(false);
-    };
-
-    loadData();
-
-    const interval = window.setInterval(loadData, 1000);
-
-    return () => {
-      window.clearInterval(interval);
-    };
-  }, []);
+  const contexts: AssessmentRiskContext[] = useMemo(
+    () =>
+      assessments.map((assessment) => ({
+        assessment,
+        result: results.find((r) => r.assessmentId === assessment.id),
+      })),
+    [assessments, results],
+  );
 
   const selectedContext = useMemo(
     () => contexts.find((context) => context.assessment.id === assessmentId),

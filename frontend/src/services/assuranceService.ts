@@ -18,13 +18,36 @@ function writeStoredResults(records: AssuranceResult[]): void {
   localStorage.setItem(ASSURANCE_RESULTS_KEY, JSON.stringify(records));
 }
 
+function toPercent(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  if (value <= 1) return Math.round(value * 100);
+  return Math.round(value);
+}
+
 export async function fetchAssuranceResultFromApi(
   assessmentId: string,
 ): Promise<AssuranceResult | undefined> {
   try {
-    const result = await apiRequest<AssuranceResult>(
+    const raw = await apiRequest<AssuranceResult>(
       `/assurance-lab/${assessmentId}/results`,
     );
+    // Backend returns 0-1 floats, frontend pages display 0-100.
+    // Normalise here once, so Findings / Risk / Evidence all show
+    // 80% not 0.8%. ReportService's toPercent is idempotent for
+    // values already > 1, so this does not double-convert there.
+    const result: AssuranceResult = {
+      ...raw,
+      overallConfidence: toPercent(raw.overallConfidence),
+      domains: raw.domains.map((d) => ({
+        ...d,
+        score: toPercent(d.score),
+        confidence: toPercent(d.confidence),
+        findings: d.findings.map((f) => ({
+          ...f,
+          confidence: toPercent(f.confidence),
+        })),
+      })),
+    };
     const stored = readStoredResults();
     const idx = stored.findIndex((r) => r.assessmentId === assessmentId);
     if (idx >= 0) {

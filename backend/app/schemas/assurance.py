@@ -29,6 +29,15 @@ class AssuranceFinding(BaseModel):
         validation_alias=AliasChoices("affectedSamples", "affected_samples"),
         serialization_alias="affectedSamples",
     )
+    # Image/file names from the engine's affected_assets. Added
+    # 2026-10-27 so Flagged Images can list the actual files;
+    # previously only the count survived, so flagged images were
+    # always empty.
+    affected_assets: list[str] = Field(
+        default=[],
+        validation_alias=AliasChoices("affectedAssets", "affected_assets"),
+        serialization_alias="affectedAssets",
+    )
     detection_method: str = Field(
         ...,
         validation_alias=AliasChoices("detectionMethod", "detection_method"),

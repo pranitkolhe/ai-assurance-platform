@@ -109,7 +109,9 @@ async def upload_asset_file(
     if assessment is None:
         raise HTTPException(status_code=404, detail="Assessment not found; create it first, then upload")
     settings = get_settings()
-    upload_dir = Path(settings.UPLOAD_DIR)
+    # Resolve to an absolute path: the stored file_path must work
+    # for a service started from any folder, not just backend/.
+    upload_dir = Path(settings.UPLOAD_DIR).resolve()
     upload_dir.mkdir(parents=True, exist_ok=True)
 
     dest_path = upload_dir / f"{assessment_id}_{file.filename}"
@@ -151,6 +153,18 @@ async def upload_asset_file(
                     stored_path = children[0]
                 else:
                     stored_path = extract_dir
+                if not (stored_path / 'annotations.json').exists():
+                    import json as _json
+                    _folders = set()
+                    for _p in stored_path.rglob('*.json'):
+                        try:
+                            _d = _json.loads(_p.read_text(encoding='utf-8'))
+                        except (OSError, ValueError):
+                            continue
+                        if isinstance(_d, dict) and 'images' in _d and 'annotations' in _d:
+                            _folders.add(str(_p.parent.relative_to(stored_path)))
+                    if len(_folders) > 1:
+                        raise HTTPException(status_code=400, detail='ZIP contains multiple datasets (' + ', '.join(sorted(_folders)) + '). Upload one dataset per asset.')
             elif dest_path.suffix.lower() == ".json":
                 dataset_dir = upload_dir / f"{assessment_id}_{dest_path.stem}"
                 dataset_dir.mkdir(parents=True, exist_ok=True)

@@ -290,6 +290,31 @@ def _analyze_coco(root: Path, reference: dict | None) -> dict:
                     break
             if annotation_path is not None:
                 break
+        # Fallback (2026-10-27): a single dataset nested deeper than
+        # root/annotations/ (e.g. my-dataset/data/annotations.json).
+        # Search recursively, but only use it if exactly one COCO
+        # JSON exists in the whole tree — if there are several in
+        # different folders, that is a multi-dataset ZIP, which the
+        # backend upload rejects with a clear message instead of
+        # silently analysing an arbitrary one of them.
+        if annotation_path is None:
+            candidates = []
+            for path in sorted(root.rglob("*.json")):
+                try:
+                    data = json.loads(path.read_text(encoding="utf-8"))
+                except (OSError, ValueError):
+                    continue
+                if isinstance(data, dict) and "images" in data and "annotations" in data:
+                    candidates.append(path)
+            if len(candidates) == 1:
+                annotation_path = candidates[0]
+            elif len(candidates) > 1:
+                folders = sorted({str(p.parent.relative_to(root)) for p in candidates})
+                return _failed_result(
+                    "COCO",
+                    "Multiple datasets found in one upload: "
+                    + ", ".join(folders)
+                    + ". Upload one dataset per asset.")
         if annotation_path is None:
             return _failed_result("COCO", "No COCO annotation JSON file was found.")
     try:
@@ -377,6 +402,7 @@ def _analyze_coco(root: Path, reference: dict | None) -> dict:
         dimensions_by_id[image_id] = image_dimensions(found)
     duplicate_count = 0
     critical_same_content = False
+    same_content_examples: list[str] = []
     duplicate_examples: list[str] = []
     for digest, group in hash_to_images.items():
         if len(group) < 2:
@@ -396,6 +422,7 @@ def _analyze_coco(root: Path, reference: dict | None) -> dict:
                 if isinstance(ann, dict)))
         if len(set(label_sets)) > 1:
             critical_same_content = True
+            same_content_examples = names
     if duplicate_count > 0:
         findings.append(_finding(
             "duplicate-content", "Duplicate image content", "high",
@@ -409,7 +436,7 @@ def _analyze_coco(root: Path, reference: dict | None) -> dict:
             "Same image content with different labels", "critical",
             "Identical image files carry different category labels. "
             "This is a strong label-flipping / poisoning signal.",
-            {}, []))
+            {}, same_content_examples[:5]))
     if missing_count > 0:
         findings.append(_finding(
             "missing-image-files", "Annotation images missing from disk",
@@ -423,7 +450,9 @@ def _analyze_coco(root: Path, reference: dict | None) -> dict:
     invalid_count = 0
     unknown_image_examples: list[str] = []
     unknown_category_examples: list[str] = []
+    unknown_category_images: list[str] = []
     invalid_bbox_examples: list[str] = []
+    invalid_bbox_images: list[str] = []
     class_dist: Counter = Counter()
     for ann in annotations:
         if not isinstance(ann, dict):
@@ -442,6 +471,8 @@ def _analyze_coco(root: Path, reference: dict | None) -> dict:
             valid_ann = False
             if len(unknown_category_examples) < 5:
                 unknown_category_examples.append(str(category_id))
+            if image_id in image_map and len(unknown_category_images) < 5:
+                unknown_category_images.append(str(image_map[image_id].get("file_name", "")))
         else:
             class_dist[cat_map[category_id]] += 1
         bbox = ann.get("bbox")
@@ -461,6 +492,8 @@ def _analyze_coco(root: Path, reference: dict | None) -> dict:
                 valid_ann = False
                 if len(invalid_bbox_examples) < 5:
                     invalid_bbox_examples.append(str(ann.get("id", image_id)))
+                if image_id in image_map and len(invalid_bbox_images) < 5:
+                    invalid_bbox_images.append(str(image_map[image_id].get("file_name", "")))
         if not valid_ann and image_id in image_map:
             image = image_map[image_id]
             parent = Path(str(image.get("file_name", ""))).parent.name
@@ -478,12 +511,12 @@ def _analyze_coco(root: Path, reference: dict | None) -> dict:
             "annotations-for-unknown-categories",
             "Annotations reference unknown categories", "high",
             "Some annotations point to category ids that do not exist.",
-            {"examples": unknown_category_examples}, []))
+            {"examples": unknown_category_examples}, unknown_category_images))
     if invalid_bbox_examples:
         findings.append(_finding(
             "invalid-bounding-boxes", "Invalid bounding boxes", "high",
             "Some boxes are empty, negative, or outside the image.",
-            {"examples": invalid_bbox_examples}, []))
+            {"examples": invalid_bbox_examples}, invalid_bbox_images))
     empty_images = sum(1 for image_id in image_map
                        if not anns_by_image.get(image_id))
     if empty_images > 0:

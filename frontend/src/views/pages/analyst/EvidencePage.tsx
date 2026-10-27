@@ -8,9 +8,8 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 
-import { loadEvidence } from "../../../controllers/evidenceController";
-import { loadAssessments } from "../../../controllers/assessmentController";
-import { getAssuranceResults } from "../../../services/assuranceService";
+import { useLiveAssessments } from "../../../controllers/assessmentController";
+import { useLiveAssuranceResults } from "../../../services/liveAssuranceService";
 
 import type { Evidence } from "../../../models/evidence.model";
 
@@ -34,9 +33,29 @@ function domainLabel(domain: string) {
 }
 
 export default function EvidencePage() {
-  const assessments = loadAssessments();
-  const evidenceRecords = loadEvidence();
-  const results = getAssuranceResults();
+  const assessments = useLiveAssessments();
+  const { results } = useLiveAssuranceResults();
+
+  // Derive evidence from live findings (2026-10-27): previously
+  // this joined stored evidence (assure_evidence, never written)
+  // with findings, so it was always empty. One evidence record per
+  // finding, with the finding's affected assets as its value.
+  const evidenceRecords: Evidence[] = results.flatMap((result) =>
+    result.domains.flatMap((domain) =>
+      domain.findings.map((finding) => ({
+        id: `${result.assessmentId}-${finding.id}`,
+        findingId: finding.id,
+        type: domain.domain,
+        description: finding.description,
+        value:
+          finding.affectedAssets && finding.affectedAssets.length > 0
+            ? finding.affectedAssets.join(", ")
+            : `Affected samples: ${finding.affectedSamples}`,
+        source: finding.detectionMethod,
+        confidence: finding.confidence,
+      })),
+    ),
+  );
 
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -53,7 +72,10 @@ export default function EvidencePage() {
       for (const domain of result.domains) {
         for (const finding of domain.findings) {
           const relatedEvidence = evidenceRecords.filter(
-            (item) => item.findingId === finding.id,
+            (item) =>
+              item.findingId === finding.id &&
+              (item.id.startsWith(`${result.assessmentId}-`) ||
+                !item.id.includes("-")),
           );
 
           for (const evidenceItem of relatedEvidence) {

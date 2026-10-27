@@ -53,6 +53,7 @@ def _domain_result(domain: AssuranceDomain, result: dict) -> AssuranceDomainResu
             severity=Severity(severity),
             confidence=float(result.get("confidence", 0.0)),
             affected_samples=len(finding.get("affected_assets", [])),
+            affected_assets=[str(a) for a in finding.get("affected_assets", [])],
             detection_method=domain.value,
         ))
     return AssuranceDomainResult(

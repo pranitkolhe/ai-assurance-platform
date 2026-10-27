@@ -284,7 +284,7 @@ function DataIntegrityOverview() {
  * This component calls GET /datasets/{asset_id}/integrity, which
  * runs the real data-integrity service (8101) on the stored file.
  */
-function LiveDataIntegrityCheck({ assetId }: { assetId: string }) {
+function LiveDataIntegrityCheck({ assetId, onResult }: { assetId: string; onResult?: (r: DatasetIntegrityLegacy) => void }) {
   const [result, setResult] = useState<DatasetIntegrityLegacy | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -294,15 +294,16 @@ function LiveDataIntegrityCheck({ assetId }: { assetId: string }) {
     setLoading(true)
     setError('')
     fetchDatasetIntegrity(assetId)
-      .then((r) => { if (!cancelled) setResult(r) })
+      .then((r) => { if (!cancelled) { setResult(r); onResult?.(r) } })
       .catch((err: unknown) => {
         if (cancelled) return
         const msg = err instanceof Error ? err.message : ''
         if (assetId.startsWith('DATA-') || assetId.startsWith('ASM-')) {
           setError('This asset only exists in local storage, not in the backend database. Re-upload it from the contributor side so the backend stores it, then reopen this page.')
-        } else if (msg.includes('503') || msg.toLowerCase().includes('unavailable')) {
-          setError('Data-integrity service (8101) is not running. Start it, then reopen this page.')
         } else {
+          // Show the backend's real reason verbatim instead of
+          // guessing "service not running": a 503 can also mean
+          // the service returned an error, or the file is missing.
           setError(msg || 'Live data-integrity check failed.')
         }
       })
@@ -355,12 +356,55 @@ function DataIntegrityReport({
         asset.type === 'dataset',
     )
 
-  const dataDomain =
+  // Live result feeds the section below when no stored result
+  // exists (2026-10-27): previously the section always showed
+  // 'Analysis Result Unavailable' even after a successful live
+  // check, because nothing ever saved a stored result.
+  const [liveResult, setLiveResult] = useState<DatasetIntegrityLegacy | null>(null)
+
+  const storedDomain =
     assurance?.domains.find(
       (domain) =>
         domain.domain ===
         'data_integrity',
     )
+
+  const liveDomain: AssuranceDomainResult | undefined = liveResult
+    ? {
+        domain: 'data_integrity',
+        score: liveResult.score ?? (liveResult.valid ? 100 : 0),
+        confidence: liveResult.confidence ?? 0,
+        status:
+          liveResult.engine_status === 'pass' || liveResult.valid
+            ? 'pass'
+            : liveResult.engine_status === 'review'
+              ? 'warning'
+              : 'fail',
+        summary: `Live analysis via service 8101: ${liveResult.total_images} images, ${liveResult.total_annotations} annotations, ${liveResult.duplicate_count} duplicates, ${liveResult.corrupt_samples_count} corrupt samples.`,
+        metrics: [
+          { id: 'images', name: 'Images', value: liveResult.total_images, status: 'pass', description: 'Images listed in the dataset annotations.' },
+          { id: 'annotations', name: 'Annotations', value: liveResult.total_annotations, status: 'pass', description: 'Annotations in the dataset.' },
+          { id: 'duplicates', name: 'Duplicates', value: liveResult.duplicate_count, status: liveResult.duplicate_count === 0 ? 'pass' : 'fail', description: 'Exact-content duplicate images (SHA-256).' },
+          { id: 'corrupt', name: 'Corrupt samples', value: liveResult.corrupt_samples_count, status: liveResult.corrupt_samples_count === 0 ? 'pass' : 'fail', description: 'Missing or unreadable image files.' },
+        ],
+        findings: liveResult.warnings.map((w, i) => {
+          const [sev, ...rest] = w.split(':')
+          const sevLower = sev.trim().toLowerCase()
+          const severity: 'low' | 'medium' | 'high' | 'critical' = sevLower === 'critical' ? 'critical' : sevLower === 'high' ? 'high' : sevLower === 'medium' ? 'medium' : 'low'
+          return {
+            id: `live-${i}`,
+            title: rest.join(':').trim() || w,
+            description: w,
+            severity,
+            confidence: liveResult.confidence ?? 0,
+            affectedSamples: liveResult.total_images,
+            detectionMethod: 'Live data-integrity service (8101)',
+          }
+        }),
+      }
+    : undefined
+
+  const dataDomain = storedDomain ?? liveDomain
 
   const metrics =
     dataDomain?.metrics ?? []
@@ -382,6 +426,7 @@ function DataIntegrityReport({
     }, [
       datasetAsset,
       dataDomain,
+      liveDomain,
     ])
 
   if (!details?.assessment) {
@@ -468,7 +513,7 @@ function DataIntegrityReport({
         </section>
       ) : (
         <>
-          <LiveDataIntegrityCheck assetId={datasetAsset.id} />
+          <LiveDataIntegrityCheck assetId={datasetAsset.id} onResult={setLiveResult} />
           <section className="grid gap-4 md:grid-cols-3">
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
@@ -750,8 +795,12 @@ function DataIntegrityReport({
                   </h2>
 
                   <p className="mt-1 text-sm leading-6 text-amber-800">
-                    The dataset artifact is registered, but a Data Integrity
-                    assurance result is not available for this assessment yet.
+                    The dataset artifact is registered, but a stored Data
+                    Integrity assurance result is not available for this
+                    assessment yet. This stored-result section is not the
+                    live analysis — use the Live data-integrity check box
+                    above, which runs the real service (8101) on the
+                    stored dataset and is the authoritative result.
                   </p>
                 </div>
               </div>

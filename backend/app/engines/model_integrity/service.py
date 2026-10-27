@@ -15,6 +15,8 @@ import os
 
 import httpx
 
+from app.engines.paths import resolve_engine_path
+
 
 class ModelIntegrityService:
     def __init__(self, base_url: str | None = None, timeout: float = 120.0):
@@ -26,7 +28,7 @@ class ModelIntegrityService:
                       format_hint: str | None = None,
                       reference: dict | None = None,
                       access_level: str | None = None) -> dict:
-        payload: dict = {"model_path": model_path}
+        payload: dict = {"model_path": resolve_engine_path(model_path)}
         if format_hint:
             payload["format"] = format_hint
         if reference is not None:
